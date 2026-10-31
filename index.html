@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#17212b">
+<title>MUNDORA</title>
+<style>
+:root{--panel:#17212bea;--line:#ffffff25;--text:#fff;--muted:#b9c6d2;--accent:#74d66d}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#9bd8ff;color:var(--text);font-family:system-ui,Arial;touch-action:none}
+#game{position:fixed;inset:0}canvas{display:block;width:100%;height:100%;touch-action:none}
+.top{position:fixed;top:env(safe-area-inset-top,8px);left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;pointer-events:none}
+.brand,.actions,.hint,.toolbar{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:14px;box-shadow:0 5px 20px #0002}
+.brand{padding:8px 12px;font-weight:800;font-size:14px;pointer-events:auto}.brand small{display:block;font-weight:500;color:var(--muted);font-size:10px}
+.actions{display:flex;gap:5px;padding:5px;pointer-events:auto}
+button{border:1px solid #ffffff25;background:#ffffff12;color:white;border-radius:10px;padding:9px 11px;font-weight:650;font-size:12px}
+button:active{background:#ffffff30;transform:scale(.97)}
+#status{position:fixed;top:62px;left:50%;transform:translateX(-50%);padding:6px 10px;background:#17212bcc;border-radius:20px;color:#fff;font-size:11px;white-space:nowrap;pointer-events:none}
+.toolbar{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));padding:8px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+.toolbar::-webkit-scrollbar{display:none}.slot{flex:0 0 58px;height:65px;border-radius:11px;border:2px solid #ffffff30;background:#ffffff10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:white}
+.slot.selected{border-color:#a5ff91;background:#74d66d35;box-shadow:0 0 0 2px #74d66d30}.swatch{width:25px;height:25px;border:2px solid #ffffff55;box-shadow:inset -5px -5px #0002,inset 4px 4px #fff2}
+.hint{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);padding:7px 11px;font-size:10px;color:#eaf2f8;white-space:nowrap;pointer-events:none}
+#modal{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;padding:20px}
+.dialog{width:min(340px,100%);background:#17212b;border:1px solid var(--line);border-radius:18px;padding:18px}.dialog h2{margin:0 0 8px;font-size:19px}.dialog p{font-size:13px;color:var(--muted);line-height:1.45}.dialog .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#toast{position:fixed;left:50%;top:105px;transform:translateX(-50%);background:#17212b;color:white;padding:8px 12px;border-radius:10px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none}
+.dpad{position:fixed;right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(126px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:4px;padding:6px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:18px;box-shadow:0 5px 20px #0002;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;z-index:5}
+.dpad button{width:48px;height:48px;padding:0;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.dpad button.on{background:#74d66d55;border-color:#a5ff91}
+.dpad .up{grid-column:2;grid-row:1}.dpad .left{grid-column:1;grid-row:2}.dpad .center{grid-column:2;grid-row:2;font-size:22px}.dpad .right{grid-column:3;grid-row:2}.dpad .down{grid-column:2;grid-row:3}
+@media(max-height:480px){.dpad{bottom:calc(96px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(3,40px);grid-template-rows:repeat(3,40px)}.dpad button{width:40px;height:40px;font-size:17px}}
+@media(min-width:700px){.toolbar{left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:90vw}.hint{bottom:95px}}
+</style>
+<style>
+/* MUNDORA — estilos do menu principal e das telas (Minha Cidade, Minhas Criações, Configurações) */
+#toast{z-index:60}
+.screen{position:fixed;inset:0;z-index:20;display:none;overflow:hidden}
+.screen.on{display:block}
+
+/* ---------- MENU PRINCIPAL ---------- */
+#menu{background:linear-gradient(#4aa8ff,#8fd3ff 55%,#d6f1ff)}
+#menuBg{position:absolute;inset:0;width:100%;height:100%}
+.menu-wrap{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top,0px) + 20px) 14px calc(env(safe-area-inset-bottom,0px) + 12px)}
+.logo{flex:none;text-align:center}
+.logo h1{margin:0;font:900 clamp(46px,15vw,76px)/1 "Arial Black",Impact,system-ui,sans-serif;letter-spacing:.03em;color:#ffd84a;
+ text-shadow:-2px -2px 0 #4a2a06,0 -2px 0 #4a2a06,-2px 0 0 #4a2a06,-2px 2px 0 #4a2a06,2px -2px 0 #4a2a06,
+ 1px 1px 0 #e39a1c,2px 2px 0 #d68f17,3px 3px 0 #c88413,4px 4px 0 #b9780f,5px 5px 0 #aa6c0c,6px 6px 0 #9a600a,7px 7px 0 #4a2a06,8px 8px 0 #4a2a06,10px 10px 8px #0005}
+.slogan{display:inline-block;margin:14px 0 0;padding:6px 14px;font:800 clamp(11px,3.4vw,14px)/1.2 system-ui,Arial,sans-serif;letter-spacing:.14em;color:#fff;background:#17212bc7;border:2px solid #0b121a;border-radius:8px;box-shadow:0 3px 0 #0b121a;text-shadow:0 2px 0 #0008}
+.zone{flex:1 1 0;min-height:96px;width:100%}
+.menu-btns{flex:none;display:flex;flex-direction:column;gap:12px;width:min(100%,420px)}
+.mbtn{display:flex;align-items:center;gap:12px;width:100%;min-height:76px;padding:9px 12px 9px 9px;border-radius:14px;border:2px solid #0b121a;background:linear-gradient(#2e4050,#1b2733);color:#fff;text-align:left;font-weight:400;
+ box-shadow:inset 0 2px 0 #ffffff2a,0 5px 0 #0b121a,0 10px 14px #0005;-webkit-tap-highlight-color:transparent;animation:mpop .45s both}
+.mbtn:nth-child(2){animation-delay:.06s}.mbtn:nth-child(3){animation-delay:.12s}.mbtn:nth-child(4){animation-delay:.18s}
+.mbtn:active{transform:translateY(4px);box-shadow:inset 0 2px 0 #ffffff2a,0 1px 0 #0b121a,0 4px 8px #0005;background:linear-gradient(#3a5166,#223140)}
+.mbtn .ico{flex:none;width:58px;height:58px;border-radius:10px;border:2px solid #0b121a;background:linear-gradient(var(--c),var(--c2));box-shadow:inset 3px 3px 0 #ffffff44,inset -3px -3px 0 #00000033;display:flex;align-items:center;justify-content:center}
+.mbtn .ico svg{width:38px;height:38px;display:block}
+.mbtn .txt{flex:1;min-width:0}
+.mbtn .txt b{display:block;font:900 17px/1.15 system-ui,Arial,sans-serif;letter-spacing:.06em;text-shadow:0 2px 0 #0008}
+.mbtn .txt small{display:block;margin-top:3px;font:600 12.5px/1.25 system-ui,Arial,sans-serif;color:#c3d0dc}
+.mbtn .chev{flex:none;font:900 28px/1 system-ui,Arial,sans-serif;color:#ffffff80;padding:0 4px 3px}
+.foot{flex:none;margin-top:14px;font:800 11px system-ui,Arial,sans-serif;letter-spacing:.16em;color:#fff;text-shadow:0 2px 0 #0b121a,0 0 6px #0008;text-align:center}
+@keyframes mpop{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media(max-height:700px){.mbtn{min-height:64px}.mbtn .ico{width:48px;height:48px}.mbtn .ico svg{width:32px;height:32px}.mbtn .txt b{font-size:15px}.menu-btns{gap:9px}.menu-wrap{padding-top:calc(env(safe-area-inset-top,0px) + 12px)}.slogan{margin-top:8px}}
+@media(prefers-reduced-motion:reduce){.mbtn{animation:none}}
+
+/* ---------- TELAS INTERNAS ---------- */
+.sub{background:linear-gradient(#5cb6ff,#a9deff 55%,#d9f3ff)}
+.sub::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12%;background:linear-gradient(#6bb344 0 12px,#95613d 12px);border-top:3px solid #3f7a28;pointer-events:none}
+.sub-wrap{position:relative;z-index:1;height:100%;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+.sub-in{max-width:520px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 14px) 14px calc(env(safe-area-inset-bottom,0px) + 28px)}
+.sub-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.back{flex:none;padding:10px 14px;border-radius:10px;border:2px solid #0b121a;background:#17212bdd;color:#fff;font:800 13px system-ui,Arial,sans-serif;box-shadow:0 3px 0 #0b121a}
+.back:active{transform:translateY(3px);box-shadow:none}
+.sub-head h2{margin:0;font:900 21px/1.1 system-ui,Arial,sans-serif;letter-spacing:.06em;color:#fff;text-shadow:0 3px 0 #0b121a,0 0 8px #0006}
+.card{background:#17212be6;border:2px solid #0b121a;border-radius:14px;box-shadow:0 4px 0 #0b121a,0 10px 18px #0003;padding:14px;margin:0 0 14px;color:#fff}
+.card h3{margin:0 0 6px;font-size:16px;letter-spacing:.03em}
+.card p{margin:0;color:#c3d0dc;font-size:13.5px;line-height:1.45}
+.card p+p{margin-top:8px}
+.card .small{font-size:12px;color:#9fb0bf}
+.pbtn{display:inline-block;margin-top:12px;padding:12px 16px;border-radius:10px;border:2px solid #0b121a;background:linear-gradient(#6fcf5c,#3d8c3f);color:#fff;font:800 14px system-ui,Arial,sans-serif;text-shadow:0 1px 0 #0006;box-shadow:inset 2px 2px 0 #ffffff44,0 3px 0 #0b121a}
+.pbtn:active{transform:translateY(3px);box-shadow:inset 2px 2px 0 #ffffff44}
+.pbtn.alt{background:linear-gradient(#ffb04a,#d9731a)}
+.art{display:block;width:100%;height:auto;border-radius:10px;background:linear-gradient(#7cc8ff,#c9ecff);border:2px solid #0b121a;margin-bottom:12px}
+.chip{display:inline-block;margin-top:10px;padding:5px 10px;border-radius:8px;background:#ffffff18;border:1px solid #ffffff30;font-size:12px;font-weight:700}
+.save-card{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.save-card canvas{flex:none;width:150px;height:116px;border-radius:10px;border:2px solid #0b121a;background:linear-gradient(#7cc8ff,#c9ecff)}
+.save-card .info{flex:1;min-width:140px}
+.save-card .info h3{margin:0}
+.crow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #ffffff1c}
+.crow:first-of-type{border-top:0;padding-top:2px}
+.crow .t{flex:1;min-width:0}
+.crow .t b{display:block;font-size:14.5px}
+.crow .t span{display:block;margin-top:2px;font-size:12px;line-height:1.35;color:#b9c6d2}
+.sw{flex:none;position:relative;width:58px;height:32px;padding:0;border-radius:8px;border:2px solid #0b121a;background:#4a5663;box-shadow:inset 0 3px 0 #0004;-webkit-tap-highlight-color:transparent}
+.sw i{position:absolute;top:3px;left:3px;width:22px;height:22px;background:#d7dee5;border:2px solid #0b121a;transition:transform .15s}
+.sw[aria-checked=true]{background:#4aa83f}
+.sw[aria-checked=true] i{transform:translateX(26px)}
+.sw:active{transform:none}
+
+/* ---------- OFICINA: carregando / confirmação ---------- */
+#oficinaLoading{display:none;position:fixed;inset:0;z-index:15;align-items:center;justify-content:center;padding:20px;pointer-events:none}
+#oficinaLoading.on{display:flex}
+#oficinaLoading span{background:#17212bee;border:2px solid #0b121a;border-radius:12px;padding:12px 16px;font-size:13px;font-weight:700;text-align:center;max-width:300px;line-height:1.4}
+#confirmBox{display:none;position:fixed;inset:0;z-index:70;background:#0009;align-items:center;justify-content:center;padding:20px}
+#confirmBox.on{display:flex}
+.brand{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.brand:active{background:#2b3b4bea}
+@media(max-width:380px){.actions button{padding:9px 8px}}
+
+/* Estado inicial: o MENU é a primeira tela. A Oficina só aparece com body[data-screen=oficina]. */
+body:not([data-screen=oficina]) :is(#game,.top,#status,.hint,.toolbar,#dpad,#modal){visibility:hidden!important;pointer-events:none!important}
+
+/* ---------- v1.2: diálogos de salvar / novo projeto, lista de criações ---------- */
+.ovl{display:none;position:fixed;inset:0;z-index:72;background:#0009;align-items:center;justify-content:center;padding:20px}
+.ovl.on{display:flex}
+.ovl .dialog{max-height:100%;overflow-y:auto}
+.stack{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.big{width:100%;min-height:50px;padding:12px 14px;font-size:14px;font-weight:800;line-height:1.25;border-radius:12px;border:2px solid #0b121a;background:linear-gradient(#3a4a5a,#26323e);color:#fff;box-shadow:inset 2px 2px 0 #ffffff25,0 3px 0 #0b121a;word-break:break-word}
+.big.ok{background:linear-gradient(#6fcf5c,#3d8c3f);text-shadow:0 1px 0 #0006}
+.big.bad{background:linear-gradient(#d95a4e,#a63a31);text-shadow:0 1px 0 #0006}
+.big:active{transform:translateY(3px);box-shadow:none}
+#nameInput{width:100%;margin-top:10px;padding:12px;border-radius:10px;border:2px solid #0b121a;background:#0f1720;color:#fff;font:600 16px system-ui,Arial,sans-serif;touch-action:auto;-webkit-user-select:text;user-select:text}
+#nameInput:focus{outline:2px solid #74d66d}
+#nameErr{min-height:18px;margin:6px 0 0;font-size:12px;color:#ff9b91}
+.swatch{background-size:100% 100%;image-rendering:pixelated;image-rendering:crisp-edges}
+.save-card img{image-rendering:pixelated;flex:none;width:150px;height:116px;border-radius:10px;border:2px solid #0b121a;background:linear-gradient(#7cc8ff,#c9ecff)}
+.save-card .info h3{word-break:break-word}
+
+/* ---------- v1.4: excluir criação, pesquisa e Minha Cidade ---------- */
+[hidden]{display:none!important}
+.dialog h2{word-break:break-word}
+#confirmBox .row button{flex:1;min-height:46px;font-size:13px;font-weight:800}
+.sinput{width:100%;padding:12px;border-radius:10px;border:2px solid #0b121a;background:#0f1720;color:#fff;font:600 16px system-ui,Arial,sans-serif;touch-action:auto;-webkit-user-select:text;user-select:text}
+.sinput:focus{outline:2px solid #74d66d}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btns .pbtn{margin-top:10px;padding:11px 13px}
+.pbtn.del{background:linear-gradient(#e0605a,#a63a31)}
+.city{background:#9bd8ff;flex-direction:column}
+.city.on{display:flex}
+.city-map{position:relative;flex:1 1 0;min-height:0;overflow:hidden}
+#cityGame{position:absolute;inset:0}
+#cityGame canvas{display:block;width:100%;height:100%;touch-action:none}
+.city-top{position:absolute;z-index:3;top:calc(env(safe-area-inset-top,0px) + 8px);left:8px;right:8px;display:flex;align-items:center;gap:10px;pointer-events:none}
+.city-top>*{pointer-events:auto}
+.city-top .back{margin:0;flex:none}
+.city-top h2{margin:0;flex:1;min-width:0;font:900 17px/1.1 system-ui,Arial,sans-serif;letter-spacing:.05em;color:#fff;text-shadow:0 3px 0 #0b121a,0 0 8px #0006;pointer-events:none}
+.city-top .chip{margin:0;background:#17212bdd;border:2px solid #0b121a;white-space:nowrap;font-size:11px}
+.city-hint{position:absolute;z-index:2;left:8px;top:calc(env(safe-area-inset-top,0px) + 58px);max-width:calc(100% - 70px);padding:5px 9px;border-radius:10px;background:#17212bcc;font-size:11px;color:#eaf2f8;pointer-events:none}
+.zoombtns{position:absolute;z-index:3;right:8px;bottom:150px;display:flex;flex-direction:column;gap:6px}
+.zoombtns button{width:40px;height:40px;padding:0;font-size:20px;border-radius:12px;background:#17212bdd;border:2px solid #0b121a;color:#fff}
+.cpad{position:absolute;z-index:3;bottom:8px;display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(3,40px);gap:3px;padding:5px;background:#17212bdd;border:2px solid #0b121a;border-radius:16px}
+.cpad button{width:40px;height:40px;padding:0;font-size:17px;border-radius:10px;touch-action:none}
+#camPad{right:8px}.nudge{left:8px}
+.cpad .up{grid-column:2;grid-row:1}.cpad .left{grid-column:1;grid-row:2}.cpad .center{grid-column:2;grid-row:2}.cpad .right{grid-column:3;grid-row:2}.cpad .down{grid-column:2;grid-row:3}
+.ntxt{display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;font-weight:800;color:#c3d0dc;line-height:1.1}
+#cityLoading{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;background:#9bd8ff;color:#17212b;font-weight:800;text-align:center;padding:30px}
+#cityLoading.on{display:flex}
+.city-bar{flex:none;background:#17212b;border-top:2px solid #0b121a;padding:8px 10px}
+.bar-info{font-size:12px;color:#c3d0dc;margin-bottom:6px;word-break:break-word}
+.bar-row{display:flex;gap:8px}
+.cbtn{flex:1;min-height:46px;padding:6px 8px;border-radius:12px;border:2px solid #0b121a;font-weight:800;font-size:13px;background:linear-gradient(#3a4a5a,#26323e);color:#fff;box-shadow:inset 2px 2px 0 #ffffff25,0 3px 0 #0b121a}
+.cbtn.big{flex:1.7}.cbtn.ok{background:linear-gradient(#6fcf5c,#3d8c3f)}.cbtn.bad{background:linear-gradient(#d95a4e,#a63a31)}
+.cbtn:active{transform:translateY(3px);box-shadow:none}
+.city-lib{flex:none;background:#17212b;border-top:2px solid #0b121a;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+.city-strip{display:flex;gap:8px;margin-top:8px;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;-webkit-overflow-scrolling:touch;scrollbar-width:none;min-height:104px}
+.city-strip::-webkit-scrollbar{display:none}
+.lcard{flex:0 0 92px;width:92px;padding:5px;border-radius:10px;border:2px solid #0b121a;background:#26323e;color:#fff;display:flex;flex-direction:column;gap:4px;align-items:center;font-size:11px;font-weight:700}
+.lcard img{width:80px;height:61px;border-radius:6px;border:1px solid #0b121a;image-rendering:pixelated;background:#9bd8ff}
+.lcard span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lcard.sel{border-color:#a5ff91;background:#2f5a2c;box-shadow:0 0 0 2px #74d66d66}
+.lnote{flex:1;display:flex;align-items:center;gap:10px;font-size:12.5px;color:#c3d0dc;padding:4px 2px}
+</style>
+</head>
+<body data-screen="menu">
+<div id="game"></div>
+<div class="top">
+ <div class="brand" id="backMenu" role="button" tabindex="0" aria-label="Voltar ao menu principal">◀ VOLTAR <small>ao menu principal</small></div>
+ <div class="actions">
+  <button id="save">Salvar</button><button id="load">Carregar</button><button id="clear">Novo</button>
+ </div>
+</div>
+<div id="status">Escolha um bloco e toque no mundo para construir</div>
+<div class="hint">Arraste para girar a câmera · toque para colocar · segure para quebrar</div>
+<div class="dpad" id="dpad" aria-label="Controles da câmera">
+ <button class="up" data-dir="up" aria-label="Mover visão para cima">▲</button>
+ <button class="left" data-dir="left" aria-label="Mover visão para a esquerda">◀</button>
+ <button class="center" id="camCenter" aria-label="Centralizar câmera">✋</button>
+ <button class="right" data-dir="right" aria-label="Mover visão para a direita">▶</button>
+ <button class="down" data-dir="down" aria-label="Mover visão para baixo">▼</button>
+</div>
+<div class="toolbar" id="toolbar"></div>
+<div id="toast"></div>
+<div id="choiceBox" class="ovl" role="dialog" aria-modal="true"><div class="dialog"><h2 id="choiceTitle"></h2><p id="choiceMsg"></p><div class="stack" id="choiceBtns"></div></div></div>
+<div id="nameBox" class="ovl" role="dialog" aria-modal="true"><div class="dialog"><h2 id="nameTitle">Nome da construção</h2><p>Escolha um nome para encontrá-la depois em Minhas Criações.</p><input id="nameInput" type="text" maxlength="40" autocomplete="off" placeholder="Ex.: Minha Casa" aria-label="Nome da construção"><p id="nameErr" role="alert"></p><div class="stack"><button class="big ok" id="nameOk">Salvar</button><button class="big" id="nameNo">Cancelar</button></div></div></div>
+<div id="oficinaLoading"><span>Carregando o motor 3D da Oficina…<br>(na primeira vez é preciso estar conectado à internet)</span></div>
+
+<!-- ===================== MUNDORA: MENU PRINCIPAL ===================== -->
+<div id="menu" class="screen on">
+ <canvas id="menuBg" aria-hidden="true"></canvas>
+ <div class="menu-wrap">
+  <header class="logo">
+   <h1>MUNDORA</h1>
+   <p class="slogan">SEU MUNDO. SUAS CRIAÇÕES.</p>
+  </header>
+  <div class="zone" id="islandZone"></div>
+  <nav class="menu-btns" aria-label="Menu principal">
+   <button class="mbtn" data-go="oficina" style="--c:#6fcf5c;--c2:#3d8c3f">
+    <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true"><g transform="translate(2.4 2.4) scale(.9) rotate(40 24 24)"><rect x="21" y="16" width="6" height="30" rx="1.5" fill="#a8743f" stroke="#3b2410" stroke-width="2"/><rect x="9" y="5" width="30" height="14" rx="2" fill="#dfe6ec" stroke="#2b3540" stroke-width="2"/><rect x="9" y="5" width="9" height="14" rx="2" fill="#9aa7b4" stroke="#2b3540" stroke-width="2"/></g></svg></span>
+    <span class="txt"><b>OFICINA</b><small>Crie suas próprias construções</small></span><span class="chev">›</span>
+   </button>
+   <button class="mbtn" data-go="cidade" style="--c:#5cb6ff;--c2:#2f78c4">
+    <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 13l13-5v28l-13 5z" fill="#6fcf5c" stroke="#1d3b1a" stroke-width="2" stroke-linejoin="round"/><path d="M18 8l12 5v28l-12-5z" fill="#a6e38f" stroke="#1d3b1a" stroke-width="2" stroke-linejoin="round"/><path d="M30 13l13-5v28l-13 5z" fill="#4aa6ee" stroke="#0f2b45" stroke-width="2" stroke-linejoin="round"/><circle cx="24" cy="22" r="5" fill="#e5483a" stroke="#4a1410" stroke-width="2"/><circle cx="24" cy="22" r="1.8" fill="#fff"/></svg></span>
+    <span class="txt"><b>MINHA CIDADE</b><small>Monte e povoe seu mundo</small></span><span class="chev">›</span>
+   </button>
+   <button class="mbtn" data-go="criacoes" style="--c:#ffb04a;--c2:#d9731a">
+    <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="14" width="10" height="28" fill="#e5483a" stroke="#3b0f0b" stroke-width="2"/><rect x="17" y="8" width="10" height="34" fill="#4aa6ee" stroke="#0f2b45" stroke-width="2"/><g transform="rotate(14 36 40)"><rect x="30" y="12" width="10" height="30" fill="#6fcf5c" stroke="#16361a" stroke-width="2"/></g><rect x="3" y="42" width="42" height="5" fill="#a8743f" stroke="#3b2410" stroke-width="2"/><path d="M8 20h6M19 14h6" stroke="#fff" stroke-width="2"/></svg></span>
+    <span class="txt"><b>MINHAS CRIAÇÕES</b><small>Acesse suas construções salvas</small></span><span class="chev">›</span>
+   </button>
+   <button class="mbtn" data-go="config" style="--c:#7f8c9a;--c2:#56626f">
+    <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true"><g fill="#e8eef4" stroke="#2b3540" stroke-width="2" stroke-linejoin="round"><rect x="20" y="3" width="8" height="42" rx="1"/><rect x="20" y="3" width="8" height="42" rx="1" transform="rotate(45 24 24)"/><rect x="20" y="3" width="8" height="42" rx="1" transform="rotate(90 24 24)"/><rect x="20" y="3" width="8" height="42" rx="1" transform="rotate(135 24 24)"/><circle cx="24" cy="24" r="14"/></g><circle cx="24" cy="24" r="6" fill="#56626f" stroke="#2b3540" stroke-width="2"/></svg></span>
+    <span class="txt"><b>CONFIGURAÇÕES</b><small>Personalize sua experiência</small></span><span class="chev">›</span>
+   </button>
+  </nav>
+  <footer class="foot">MUNDORA • VERSÃO 1.4</footer>
+ </div>
+</div>
+
+<!-- ===================== MUNDORA: TELAS INTERNAS ===================== -->
+<section id="s-cidade" class="screen city" aria-label="Minha Cidade">
+ <div class="city-map" id="cityMap">
+  <div id="cityGame"></div>
+  <div class="city-top"><button class="back" data-menu aria-label="Voltar ao menu principal">‹ Menu</button><h2>MINHA CIDADE</h2><span class="chip" id="cityCount">0 construções</span></div>
+  <div class="city-hint" id="cityHint">Arraste: girar · pinça: zoom · toque numa construção para selecioná-la</div>
+  <div class="zoombtns"><button id="cityZoomIn" aria-label="Aproximar">＋</button><button id="cityZoomOut" aria-label="Afastar">－</button></div>
+  <div class="cpad nudge" id="nudgePad" hidden aria-label="Mover a prévia"><button class="up" data-nudge="up" aria-label="Mover a prévia para frente">▲</button><button class="left" data-nudge="left" aria-label="Mover a prévia para a esquerda">◀</button><span class="center ntxt">mover<br>prévia</span><button class="right" data-nudge="right" aria-label="Mover a prévia para a direita">▶</button><button class="down" data-nudge="down" aria-label="Mover a prévia para trás">▼</button></div>
+  <div class="cpad" id="camPad" aria-label="Mover a câmera"><button class="up" data-dir="up" aria-label="Câmera para frente">▲</button><button class="left" data-dir="left" aria-label="Câmera para a esquerda">◀</button><button class="center" id="cityCenter" aria-label="Centralizar a câmera">✋</button><button class="right" data-dir="right" aria-label="Câmera para a direita">▶</button><button class="down" data-dir="down" aria-label="Câmera para trás">▼</button></div>
+  <div id="cityLoading" class="on"><span>Carregando o mapa 3D…</span></div>
+ </div>
+ <div class="city-bar" id="cityBar" hidden></div>
+ <div class="city-lib"><input id="citySearch" class="sinput" type="search" placeholder="Pesquisar construção pelo nome" autocomplete="off" aria-label="Pesquisar construção pelo nome"><div class="city-strip" id="cityStrip"></div></div>
+</section>
+<section id="s-criacoes" class="screen sub"><div class="sub-wrap"><div class="sub-in">
+ <div class="sub-head"><button class="back" data-back>‹ Voltar</button><h2>MINHAS CRIAÇÕES</h2></div>
+ <div id="criacoesBody"></div>
+</div></div></section>
+<section id="s-config" class="screen sub"><div class="sub-wrap"><div class="sub-in">
+ <div class="sub-head"><button class="back" data-back>‹ Voltar</button><h2>CONFIGURAÇÕES</h2></div>
+ <div id="configBody"></div>
+</div></div></section>
+<div id="confirmBox"><div class="dialog"><h2></h2><p></p><div class="row"><button id="cfNo">Cancelar</button><button id="cfYes" style="background:#3d8c3f">OK</button></div></div></div>
+
+<script>
+/* MUNDORA — menu principal, telas internas e navegação.
+   Script clássico (sem dependências): o menu funciona mesmo enquanto o Three.js da Oficina ainda carrega.
+   A Oficina (módulo em index.html) se registra em window.MUNDORA.oficina quando estiver pronta. */
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const SAVE_KEY='construtor_blocos_save';   // mesma chave usada pelo salvamento da Oficina
+const CFG_KEY='mundora_config';
+const DEFAULT_CFG={shadows:true,eco:false,grid:true,hints:true};
+function loadCfg(){try{return Object.assign({},DEFAULT_CFG,JSON.parse(localStorage.getItem(CFG_KEY)||'{}'))}catch(e){return Object.assign({},DEFAULT_CFG)}}
+const M=window.MUNDORA={cfg:loadCfg(),current:'menu',oficina:null,pendingOpenSaved:null};
+
+function toast(t){const el=$('#toast');if(!el)return;el.textContent=t;el.style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.opacity=0,1500)}
+
+/* ======================= MOTOR VOXEL ISOMÉTRICO 2D (leve, desenhado uma vez) ======================= */
+const H=.55; // altura do cubo relativa à largura
+const hex=n=>[(n>>16)&255,(n>>8)&255,n&255];
+const cl=v=>Math.max(0,Math.min(255,Math.round(v)));
+const rgb=(c,f)=>`rgb(${cl(c[0]*f)},${cl(c[1]*f)},${cl(c[2]*f)})`;
+const h3=(x,y,z)=>{const n=Math.sin(x*127.1+y*311.7+z*74.7+13.1)*43758.5453;return n-Math.floor(n)};
+function col(base,o){o=o||{};const b=hex(base),s=o.side!=null?hex(o.side):b,t=o.top!=null?hex(o.top):b;return{t:t.map(v=>v*1.08),l:s.map(v=>v*.82),r:s.map(v=>v*.62),a:o.a==null?1:o.a}}
+function vary(c,f){return{t:c.t.map(v=>v*f),l:c.l.map(v=>v*f),r:c.r.map(v=>v*f),a:c.a}}
+// mesmas cores dos materiais da Oficina (mesma ordem de índices)
+const PAL=[col(0x69ad43,{top:0x83c95a,side:0x568b38}),col(0x95613d),col(0x888b8d),col(0xa87542),col(0xc49a60),col(0xa94e3e),col(0xd9c58a),col(0x9bdde5,{a:.5}),col(0x397b3e),col(0xe4e4dc),col(0x34383e)];
+const K={grass:col(0x6bb344,{top:0x84cf56,side:0x5b9b3b}),dirt:col(0x95613d),dirt2:col(0x84552f),stone:col(0x8b8f93),stone2:col(0x777c81),snow:col(0xf4f8fb),sand:col(0xdcc98f),
+ water:col(0x3b8fd9,{top:0x4aa6ee}),wood:col(0x8a5a2f),planks:col(0xc49a60),brick:col(0xb4483a),roof:col(0xa94e3e),roof2:col(0x6f3a30),leaf:col(0x3f9143),leaf2:col(0x2f7a38),
+ glass:col(0x9bdde5,{a:.8}),door:col(0x6e4a26),white:col(0xe4e4dc)};
+
+/* ======================= TEXTURAS PIXELADAS 16×16 (estilo clássico) =======================
+   Desenhadas por código, pixel a pixel, uma única vez. Fonte única: a Oficina (3D) e as miniaturas usam as mesmas. */
+function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+const dot=(g,x,y,c)=>{g.fillStyle=c;g.fillRect(x,y,1,1)};
+const pick=(r,a)=>a[Math.floor(r()*a.length)];
+function mkTile(seed,fn){const c=document.createElement('canvas');c.width=c.height=16;const g=c.getContext('2d');g.imageSmoothingEnabled=false;fn(g,rng(seed));return c}
+function noise(g,r,pal){for(let y=0;y<16;y++)for(let x=0;x<16;x++)dot(g,x,y,pick(r,pal))}
+function blot(g,r,n,cols,big){for(let i=0;i<n;i++){const w=1+Math.floor(r()*(big||2)),h=1+Math.floor(r()*2),x=Math.floor(r()*(16-w)),y=Math.floor(r()*(16-h));g.fillStyle=pick(r,cols);g.fillRect(x,y,w,h)}}
+const P_GRN=['#7bbd4f','#6cad3f','#5f9d36','#86c85a','#559131'];
+const P_DIRT=['#8a5a32','#7b4d28','#97663a','#6e4524','#a4733f'];
+const P_STONE=['#8c8c8c','#818181','#969696','#7a7a7a','#8a8a8a'];
+function tDirt(seed){return mkTile(seed,(g,r)=>{noise(g,r,P_DIRT);blot(g,r,5,['#5e3c1e','#68421f']);for(let i=0;i<3;i++)dot(g,Math.floor(r()*16),Math.floor(r()*16),'#9d948a')})}
+function tGrassTop(){return mkTile(11,(g,r)=>{noise(g,r,P_GRN);blot(g,r,6,['#4c8230','#8fd05f'],1)})}
+function tGrassSide(){const dirt=tDirt(23);const g=dirt.getContext('2d'),r=rng(5);
+ for(let x=0;x<16;x++){const d=4+(r()<.5?1:0)+(r()<.2?1:0);for(let y=0;y<d;y++)dot(g,x,y,pick(r,P_GRN));if(r()<.4)dot(g,x,d,'#4c8230')}
+ return dirt}
+function tStone(){return mkTile(31,(g,r)=>{noise(g,r,P_STONE);blot(g,r,8,['#6c6c6c','#747474'],3);blot(g,r,4,['#a0a0a0'],2)})}
+function tLogSide(){return mkTile(41,(g,r)=>{for(let x=0;x<16;x++){const b=pick(r,['#5c4527','#694c2a','#4f3a20','#735431']);for(let y=0;y<16;y++)dot(g,x,y,r()<.18?pick(r,['#47341b','#7d5e36']):b)}blot(g,r,3,['#3b2b15'],1)})}
+function tLogTop(){return mkTile(43,(g,r)=>{for(let y=0;y<16;y++)for(let x=0;x<16;x++){const d=Math.max(Math.abs(x-7.5),Math.abs(y-7.5));
+  let c;if(d>=7)c=pick(r,['#5c4527','#694c2a','#4f3a20']);else{const k=Math.floor(d);c=(k%2===0)?pick(r,['#b8935a','#bf9b61','#b08b53']):pick(r,['#9c7a45','#a2804a','#957340'])}
+  dot(g,x,y,c)}dot(g,7,7,'#7d5f33');dot(g,8,8,'#7d5f33')})}
+function tPlanks(){return mkTile(51,(g,r)=>{const base=['#b8915a','#c19b62','#ae864f','#c5a367'],joints=[5,11,2,9];
+  for(let b=0;b<4;b++){const c0=pick(r,base);for(let y=b*4;y<b*4+3;y++)for(let x=0;x<16;x++)dot(g,x,y,r()<.2?pick(r,base):c0);
+   for(let x=0;x<16;x++)dot(g,x,b*4+3,'#8a6a3b');
+   for(let y=b*4;y<b*4+3;y++)dot(g,joints[b],y,'#94713f')}})}
+function tBrick(){return mkTile(61,(g,r)=>{const mort=['#c9c3b7','#b9b3a7','#d0cabe'];
+  for(let y=0;y<16;y++)for(let x=0;x<16;x++)dot(g,x,y,pick(r,mort));
+  for(let row=0;row<4;row++){const off=row%2?4:0;for(let k=0;k<2;k++){const x0=(off+k*8)%16,col=pick(r,['#a5472f','#b0523a','#9a3f2a','#ab4d34']);
+    for(let y=row*4;y<row*4+3;y++)for(let dx=0;dx<7;dx++){const x=(x0+1+dx)%16;dot(g,x,y,r()<.22?pick(r,['#8f3826','#bd5e44']):col)}}}})}
+function tSand(){return mkTile(71,(g,r)=>{noise(g,r,['#dbcf9a','#d2c48a','#e2d7a6','#c9ba7f','#d8ca92']);blot(g,r,3,['#bfae72'],1)})}
+function tGlass(){return mkTile(81,(g)=>{g.clearRect(0,0,16,16);g.fillStyle='rgba(170,225,235,.22)';g.fillRect(1,1,14,14);
+  g.fillStyle='#d3f1f6';g.fillRect(0,0,16,1);g.fillRect(0,15,16,1);g.fillRect(0,0,1,16);g.fillRect(15,0,1,16);
+  g.fillStyle='#ffffffcc';[[3,3],[4,4],[5,5],[3,4],[4,3],[9,3],[10,4],[11,5]].forEach(([x,y])=>g.fillRect(x,y,1,1))})}
+function tLeaves(){return mkTile(91,(g,r)=>{noise(g,r,['#2f7a2a','#3b8c33','#276a23','#46a03c','#215c1f']);blot(g,r,7,['#1a4c1a','#194418'],2);blot(g,r,4,['#58b84a'],1)})}
+function tWhite(){return mkTile(101,(g,r)=>{noise(g,r,['#e9e9e3','#e1e1db','#eeeee8','#d9d9d3']);blot(g,r,3,['#cfcfc9'],2)})}
+function tBlack(){return mkTile(111,(g,r)=>{noise(g,r,['#30343a','#353a40','#2b2e33','#3a3f46']);blot(g,r,3,['#24272b'],2)})}
+let TILES=null;
+function buildTiles(){const d=tDirt(21),st=tStone(),lg=tLogSide(),lt=tLogTop(),pl=tPlanks(),br=tBrick(),sa=tSand(),gl=tGlass(),lv=tLeaves(),wh=tWhite(),bk=tBlack();
+ const all=c=>({top:c,side:c,bottom:c});
+ TILES=[{top:tGrassTop(),side:tGrassSide(),bottom:d},all(tDirt(22)),all(st),{top:lt,side:lg,bottom:lt},all(pl),all(br),all(sa),all(gl),all(lv),all(wh),all(bk)]}
+M.tex={get(i){if(!TILES)buildTiles();return TILES[i]||TILES[1]}};
+const TXC=[];
+function texCol(i){if(TXC[i])return TXC[i];const b=PAL[i]||PAL[1],t=M.tex.get(PAL[i]?i:1);return TXC[i]=Object.assign({},b,{a:i===7?.9:1,tx:{t:t.top,l:t.side,r:t.side}})}
+
+function poly(ctx,p,fill,img,m,sh){ctx.beginPath();ctx.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length;i++)ctx.lineTo(p[i][0],p[i][1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();
+ if(img){ctx.save();ctx.clip();ctx.imageSmoothingEnabled=false;ctx.transform(m[0],m[1],m[2],m[3],m[4],m[5]);ctx.drawImage(img,0,0,16,16);ctx.restore();if(sh){ctx.fillStyle=sh;ctx.fill()}}
+ ctx.stroke()}
+function isoBBox(vox){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const v of vox){const cx=(v.x-v.y)/2,cy=(v.x+v.y)/4-v.z*H;if(cx-.5<x0)x0=cx-.5;if(cx+.5>x1)x1=cx+.5;if(cy-.25<y0)y0=cy-.25;if(cy+.25+H>y1)y1=cy+.25+H}return{x0,x1,y0,y1}}
+function drawVox(ctx,vox,W,ox,oy){
+ const set=new Set(vox.map(v=>v.x+','+v.y+','+v.z));
+ const list=vox.slice().sort((a,b)=>(a.x+a.y+a.z)-(b.x+b.y+b.z)||a.z-b.z);
+ const hh=W*H,w2=W/2,q=W/4;
+ ctx.lineJoin='round';ctx.lineWidth=Math.max(.5,W*.025);ctx.strokeStyle='rgba(0,0,0,.22)';
+ for(const v of list){
+  const top=!set.has(v.x+','+v.y+','+(v.z+1)),lf=!set.has(v.x+','+(v.y+1)+','+v.z),rt=!set.has((v.x+1)+','+v.y+','+v.z);
+  if(!top&&!lf&&!rt)continue;
+  const cx=ox+(v.x-v.y)*w2,cy=oy+(v.x+v.y)*q-v.z*hh,c=v.c;
+  ctx.globalAlpha=c.a;
+  const tx=c.tx;
+  if(lf)poly(ctx,[[cx-w2,cy],[cx,cy+q],[cx,cy+q+hh],[cx-w2,cy+hh]],rgb(c.l,1),tx&&tx.l,[w2/16,q/16,0,hh/16,cx-w2,cy],'rgba(0,0,0,.2)');
+  if(rt)poly(ctx,[[cx,cy+q],[cx+w2,cy],[cx+w2,cy+hh],[cx,cy+q+hh]],rgb(c.r,1),tx&&tx.r,[w2/16,-q/16,0,hh/16,cx,cy+q],'rgba(0,0,0,.4)');
+  if(top)poly(ctx,[[cx,cy-q],[cx+w2,cy],[cx,cy+q],[cx-w2,cy]],rgb(c.t,1),tx&&tx.t,[w2/16,q/16,-w2/16,q/16,cx,cy-q]);
+ }
+ ctx.globalAlpha=1;
+}
+function fitDraw(ctx,vox,rx,ry,rw,rh,maxScale){
+ if(!vox.length)return;
+ const b=isoBBox(vox),W=Math.min(rw/(b.x1-b.x0),rh/(b.y1-b.y0),maxScale||1e9);
+ drawVox(ctx,vox,W,rx+rw/2-((b.x0+b.x1)/2)*W,ry+rh/2-((b.y0+b.y1)/2)*W);
+}
+function sizeCanvas(cv){const w=cv.clientWidth,h=cv.clientHeight,d=Math.min(window.devicePixelRatio||1,2);cv.width=Math.round(w*d);cv.height=Math.round(h*d);const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);return{ctx,w,h}}
+function skyFill(ctx,w,h){const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#4aa8ff');g.addColorStop(.55,'#8fd3ff');g.addColorStop(1,'#d6f1ff');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
+
+function tree(put,x,y,base,tall){
+ const top=base+(tall?2:1);
+ for(let z=base;z<=top;z++)put(x,y,z,vary(K.wood,.94+h3(x,y,z)*.1));
+ for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){put(x+dx,y+dy,top+1,vary(h3(x+dx,y+dy,5)>.5?K.leaf:K.leaf2,.95+h3(x+dx,y+dy,top)*.1));
+  if(Math.abs(dx)+Math.abs(dy)<=1)put(x+dx,y+dy,top+2,vary(h3(x+dx,y+dy,6)>.5?K.leaf:K.leaf2,.95+h3(x+dx,y+dy,top+1)*.1))}
+ put(x,y,top+3,vary(K.leaf,1.05));
+}
+function house(put,x0,y0,wall,roof,chimney){
+ for(let dx=0;dx<3;dx++)for(let dy=0;dy<3;dy++)for(let z=1;z<=3;z++){
+  if(dx===1&&dy===1)continue;put(x0+dx,y0+dy,z,vary(wall,.97+h3(x0+dx,y0+dy,z)*.06))}
+ put(x0+1,y0+2,1,K.door);put(x0+1,y0+2,2,K.door);
+ put(x0,y0+2,2,K.glass);put(x0+2,y0+1,2,K.glass);
+ for(let dx=-1;dx<=3;dx++)for(let dy=-1;dy<=3;dy++)put(x0+dx,y0+dy,4,vary(roof,.95+h3(x0+dx,y0+dy,4)*.1));
+ for(let dx=0;dx<=2;dx++)for(let dy=0;dy<=2;dy++)put(x0+dx,y0+dy,5,vary(roof,.97+h3(x0+dx,y0+dy,5)*.08));
+ put(x0+1,y0+1,6,roof);
+ if(chimney){put(x0+2,y0,6,K.stone2);put(x0+2,y0,7,K.stone)}
+}
+function buildIsland(){
+ const N=14,c=6.5,V=new Map();
+ const put=(x,y,z,k)=>V.set(x+','+y+','+z,{x,y,z,c:k});
+ const inside=(i,j)=>Math.hypot(i-c,j-c)+(h3(i,j,1)-.5)*.9<=6.6;
+ const inR=(i,j,r,m)=>i>=r[0]-m&&i<=r[2]+m&&j>=r[1]-m&&j<=r[3]+m;
+ const HA=[9,5,11,7],HB=[4,8,6,10];
+ const lake=(i,j)=>Math.hypot(i-9.5,j-9.5)<1.7, ring=(i,j)=>Math.hypot(i-9.5,j-9.5)<2.6;
+ const hgt=(i,j)=>{let h=0,d=Math.hypot(i-4,j-4);h=Math.max(h,Math.round(7-d*1.55));d=Math.hypot(i-10,j-2);h=Math.max(h,Math.round(2.6-d*1.2));d=Math.hypot(i-2,j-10);h=Math.max(h,Math.round(2.6-d*1.2));return Math.max(0,h)};
+ const heights={};
+ for(let i=0;i<N;i++)for(let j=0;j<N;j++){
+  if(!inside(i,j))continue;
+  const inA=inR(i,j,HA,0),inB=inR(i,j,HB,0),isLake=lake(i,j);
+  let h=hgt(i,j);if(inA||inB)h=0;if(isLake)h=-1;
+  heights[i+','+j]=h;
+  const depth=Math.max(1,Math.round((6.6-Math.hypot(i-c,j-c))*1.5));
+  for(let z=-depth-1;z<=h;z++){
+   let k;
+   if(z===h){
+    if(isLake)k=K.water;else if(h>=6)k=K.snow;else if(h>=2)k=h3(i,j,z)>.7?K.stone2:K.stone;
+    else if(ring(i,j)&&!inA&&!inB)k=K.sand;else k=K.grass;
+   }else if(z>=6)k=K.snow;
+   else if(h>=2&&z>=1)k=h3(i,j,z)>.75?K.stone2:K.stone;
+   else if(z>=-2)k=h3(i,j,z)>.6?K.dirt2:K.dirt;
+   else k=h3(i,j,z)>.6?K.stone2:K.stone;
+   put(i,j,z,vary(k,.94+h3(i,j,z)*.12));
+  }
+ }
+ house(put,HA[0],HA[1],K.planks,K.roof,true);
+ house(put,HB[0],HB[1],K.white,K.roof2,false);
+ [[6,6],[7,9],[2,7],[3,11],[6,12],[11,3],[12,6],[8,2],[12,9],[2,5],[7,4],[8,12],[1,8]].forEach(([x,y])=>{
+  const h=heights[x+','+y];
+  if(h!==0||inR(x,y,HA,2)||inR(x,y,HB,2)||ring(x,y))return;
+  tree(put,x,y,1,h3(x,y,9)>.5);
+ });
+ return Array.from(V.values());
+}
+function miniBlock(){const v=[];for(let a=0;a<2;a++)for(let b=0;b<2;b++){v.push({x:a,y:b,z:0,c:K.grass});v.push({x:a,y:b,z:-1,c:K.dirt})}v.push({x:0,y:0,z:-2,c:K.stone},{x:1,y:1,z:-2,c:K.stone2});return v}
+function pixelCloud(ctx,x,y,u){const rows=[[2,0,4],[1,1,7],[0,2,9],[0,3,9]];rows.forEach((r,i)=>{ctx.fillStyle=i===3?'#d9eaf7':'#fff';ctx.fillRect(x+r[0]*u,y+r[1]*u,r[2]*u,u+.5)})}
+
+/* ======================= FUNDO DO MENU ======================= */
+let ISLAND=null,bgKey='';
+function drawMenuBg(){
+ const cv=$('#menuBg');if(!cv||!cv.clientWidth)return;
+ const key=cv.clientWidth+'x'+cv.clientHeight+'@'+(window.devicePixelRatio||1);if(key===bgKey)return;bgKey=key;
+ const{ctx,w,h}=sizeCanvas(cv);
+ skyFill(ctx,w,h);
+ // sol quadrado
+ const sx=w*.84,sy=h*.1,gl=ctx.createRadialGradient(sx,sy,10,sx,sy,90);gl.addColorStop(0,'rgba(255,240,150,.7)');gl.addColorStop(1,'rgba(255,240,150,0)');ctx.fillStyle=gl;ctx.fillRect(sx-100,sy-100,200,200);
+ ctx.fillStyle='#ffe45c';ctx.fillRect(sx-22,sy-22,44,44);ctx.fillStyle='#fff6a8';ctx.fillRect(sx-22,sy-22,44,10);ctx.strokeStyle='#f0a812';ctx.lineWidth=3;ctx.strokeRect(sx-22,sy-22,44,44);
+ // nuvens de pixels
+ const u=Math.max(4,w/46);
+ pixelCloud(ctx,w*.04,h*.27,u);pixelCloud(ctx,w*.64,h*.2,u*1.1);pixelCloud(ctx,w*.74,h*.5,u*.8);pixelCloud(ctx,w*.0,h*.55,u*.9);pixelCloud(ctx,w*.4,h*.9,u);
+ const z=$('#islandZone'),cr=cv.getBoundingClientRect(),zr=z.getBoundingClientRect();
+ const rx=zr.left-cr.left,ry=zr.top-cr.top,rw=zr.width,rh=zr.height;
+ // pequenos blocos flutuando
+ const mb=miniBlock(),ms=Math.max(8,Math.min(rw*.06,22));
+ fitDraw(ctx,mb,rx+rw*.02,ry+rh*.04,ms*3,ms*3.4,ms);
+ fitDraw(ctx,mb,rx+rw*.84,ry+rh*.86-ms*2,ms*3,ms*3.4,ms*.8);
+ if(!ISLAND)ISLAND=buildIsland();
+ fitDraw(ctx,ISLAND,rx,ry,rw*1.02,rh*.97);
+}
+
+/* ======================= ÍCONES / ESTADO ======================= */
+function readSave(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return null;const a=JSON.parse(raw);return Array.isArray(a)&&a.length?a:null}catch(e){return null}}
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+
+/* ======================= BIBLIOTECA (Minhas Criações) =======================
+   Chave 'mundora_library': lista de {id,nome,blocos:[[x,y,z,tipo],...],miniatura(PNG dataURL),criado,atualizado}.
+   Na primeira leitura, a construção do formato antigo ('construtor_blocos_save') é copiada para cá
+   como "Construção salva". A chave antiga NÃO é apagada. */
+const LIB_KEY='mundora_library';
+const L=M.lib={
+ _write(items){try{localStorage.setItem(LIB_KEY,JSON.stringify(items));return true}catch(e){return false}},
+ _read(){
+  let raw=null;try{raw=localStorage.getItem(LIB_KEY)}catch(e){}
+  if(raw===null)return L._migrate();
+  try{const a=JSON.parse(raw);if(Array.isArray(a))return a}catch(e){}
+  try{localStorage.setItem(LIB_KEY+'_corrompida',raw)}catch(e){}   // não perde os dados se o JSON estiver quebrado
+  return [];
+ },
+ _migrate(){
+  const old=readSave(),items=[];
+  if(old){
+   const b=old.filter(k=>k&&typeof k.x==='number'&&typeof k.y==='number'&&typeof k.z==='number').map(k=>[k.x,k.y,k.z,k.type|0]);
+   if(b.length){const t=Date.now();items.push({id:L.newId(),nome:'Construção salva',blocos:b,miniatura:L.thumb(b),tv:2,criado:t,atualizado:t})}
+  }
+  L._write(items);return items;
+ },
+ newId(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)},
+ list(){return L._read().filter(i=>i&&i.id)},
+ get(id){return L.list().find(i=>i.id===id)||null},
+ add(item){const a=L.list(),t=Date.now();a.push(Object.assign({criado:t,atualizado:t},item));return L._write(a)},
+ setThumb(id,m){const a=L.list(),i=a.findIndex(x=>x.id===id);if(i<0)return false;a[i].miniatura=m;a[i].tv=2;return L._write(a)},   // não altera a data
+ update(id,patch){const a=L.list(),i=a.findIndex(x=>x.id===id);if(i<0)return false;Object.assign(a[i],patch,{atualizado:Date.now()});return L._write(a)},
+ thumb(blocos){
+  try{
+   const cv=document.createElement('canvas');cv.width=240;cv.height=184;const ctx=cv.getContext('2d');skyFill(ctx,240,184);
+   const vox=blocos.map(k=>({x:k[0],y:k[2],z:k[1],c:texCol(k[3])}));
+   fitDraw(ctx,vox,10,10,220,164,40);return cv.toDataURL('image/png');
+  }catch(e){return ''}
+ }
+};
+function fmtDate(t){try{return new Date(t||Date.now()).toLocaleDateString('pt-BR')}catch(e){return ''}}
+
+Object.assign(L,{
+ remove(id){const a=L.list(),b=a.filter(x=>x.id!==id);if(b.length===a.length)return false;return L._write(b)},   // remove somente a escolhida
+ norm(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim()},
+ matches(it,q){q=L.norm(q);return !q||L.norm(it.nome).includes(q)},
+ thumbSrc(it){const b=Array.isArray(it.blocos)?it.blocos:[];
+  if(it.tv!==2||!it.miniatura){const m=L.thumb(b);if(m){it.miniatura=m;L.setThumb(it.id,m)}}   // miniaturas antigas (lisas) são redesenhadas com as texturas
+  return it.miniatura||''}
+});
+/* ======================= ESTADO DA CIDADE =======================
+   'mundora_city': {v:1, defs:{hash:{nome,blocos}}, items:[{id,cid,def,x,z,rot}]} — gerenciado pelo módulo da Minha Cidade. */
+const CITY_KEY='mundora_city';
+M.cityStore={
+ read(){
+  let raw=null;try{raw=localStorage.getItem(CITY_KEY)}catch(e){}
+  const empty=()=>({defs:{},items:[]});if(!raw)return empty();
+  try{
+   const o=JSON.parse(raw),defs={},items=[];
+   if(o&&o.defs&&typeof o.defs==='object')for(const k in o.defs){const d=o.defs[k];if(d&&Array.isArray(d.blocos))defs[k]={nome:String(d.nome||'Construção'),blocos:d.blocos}}
+   if(o&&Array.isArray(o.items))for(const i of o.items)if(i&&typeof i.id==='string'&&defs[i.def]&&isFinite(i.x)&&isFinite(i.z))items.push({id:i.id,cid:i.cid||null,def:i.def,x:i.x|0,z:i.z|0,rot:(i.rot|0)&3});
+   return {defs,items};
+  }catch(e){try{localStorage.setItem(CITY_KEY+'_corrompida',raw)}catch(_){}return empty()}
+ },
+ write(st){try{localStorage.setItem(CITY_KEY,JSON.stringify({v:1,defs:st.defs,items:st.items}));return true}catch(e){return false}},
+ countOf(cid){return M.cityStore.read().items.filter(i=>i.cid===cid).length}
+};
+
+function askConfirm(title,text,okLabel,cb,o){
+ o=o||{};const box=$('#confirmBox');$('h2',box).textContent=title;$('p',box).textContent=text;
+ $('#cfNo').textContent=o.noLabel||'Cancelar';const y=$('#cfYes');y.textContent=okLabel;y.style.background=o.danger?'#b94444':'#3d8c3f';box.classList.add('on');
+ const close=()=>box.classList.remove('on');
+ $('#cfNo').onclick=close;$('#cfYes').onclick=()=>{close();cb()};
+}
+M.askConfirm=askConfirm;
+
+/* ======================= NAVEGAÇÃO (compatível com o botão Voltar do Android) ======================= */
+const screens={menu:'#menu',cidade:'#s-cidade',criacoes:'#s-criacoes',config:'#s-config'};
+function render(name){
+ M.current=name;document.body.setAttribute('data-screen',name);
+ $('#confirmBox').classList.remove('on');   // fecha confirmações ao trocar de tela (ex.: botão Voltar do Android)
+ for(const k in screens)$(screens[k]).classList.toggle('on',k===name);
+ const ofi=name==='oficina';
+ $('#oficinaLoading').classList.toggle('on',ofi&&!M.oficina);
+ if(M.oficina){if(ofi)M.oficina.enter();else M.oficina.leave()}
+ if(ofi&&!M.oficina)setTimeout(()=>{if(M.current==='oficina'&&!M.oficina)$('#oficinaLoading span').textContent='Não foi possível carregar o motor 3D. Verifique sua conexão com a internet e recarregue a página.'},9000);
+ const cid=name==='cidade';
+ $('#cityLoading').classList.toggle('on',cid&&!M.cidade);
+ if(M.cidade){if(cid)M.cidade.enter();else M.cidade.leave()}
+ if(cid&&!M.cidade)setTimeout(()=>{if(M.current==='cidade'&&!M.cidade)$('#cityLoading span').textContent='Não foi possível carregar o motor 3D. Verifique sua conexão com a internet e recarregue a página.'},9000);
+ if(name==='menu')requestAnimationFrame(drawMenuBg);
+ if(name==='criacoes')renderCriacoes();
+ if(name==='config')renderConfig();
+ const sc=$$('.menu-wrap,.sub-wrap');sc.forEach(s=>s.scrollTop=0);
+}
+function open(name){const d=((history.state&&history.state.d)||0)+1;history.pushState({s:name,d},'');render(name)}
+function back(){const d=(history.state&&history.state.d)||0;if(d>0)history.back();else render('menu')}
+function toMenu(){const d=(history.state&&history.state.d)||0;if(d>0)history.go(-d);else render('menu')}
+M.open=open;
+history.replaceState({s:'menu',d:0},'');
+window.addEventListener('pageshow',e=>{if(e.persisted){history.replaceState({s:'menu',d:0},'');render('menu')}});
+window.addEventListener('popstate',e=>render((e.state&&e.state.s)||'menu'));
+
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.go)));
+$$('[data-back]').forEach(b=>b.addEventListener('click',back));
+$$('[data-menu]').forEach(b=>b.addEventListener('click',()=>toMenu()));
+const brand=$('#backMenu');if(brand){brand.addEventListener('click',toMenu);brand.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')toMenu()})}
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(M.current==='menu')drawMenuBg()},150)});
+
+/* ======================= MINHAS CRIAÇÕES ======================= */
+function openSaved(id){
+ const go=()=>{if(M.oficina)M.oficina.openSaved(id);else M.pendingOpenSaved=id;open('oficina')};
+ if(M.oficina&&M.oficina.isDirty())askConfirm('Substituir a construção atual?','A Oficina tem alterações que ainda não foram salvas. Abrir esta criação vai substituí-las. Para guardá-las, volte à Oficina e use Salvar.','Abrir criação',go);
+ else go();
+}
+let critQuery='';
+function renderCriacoes(){
+ const body=$('#criacoesBody');body.innerHTML='';
+ if(!L.list().length){
+  const c=el('div','card','<h3>Nenhuma criação salva ainda</h3><p>Construa algo na Oficina e toque em <b>Salvar</b>. Sua miniatura vai aparecer aqui.</p>');
+  const b=el('button','pbtn','Ir para a Oficina');b.onclick=()=>open('oficina');c.appendChild(b);body.appendChild(c);return;
+ }
+ const sc=el('div','card');const inp=el('input','sinput');inp.type='search';inp.id='critSearch';inp.placeholder='Pesquisar construção pelo nome';inp.autocomplete='off';inp.value=critQuery;
+ inp.setAttribute('aria-label','Pesquisar construção pelo nome');sc.appendChild(inp);body.appendChild(sc);
+ const list=el('div');body.appendChild(list);
+ const draw=()=>{
+  list.innerHTML='';
+  const items=L.list().filter(it=>L.matches(it,critQuery)).sort((a,b)=>(b.atualizado||0)-(a.atualizado||0));
+  if(!items.length){const c=el('div','card');const p=el('p');p.textContent='Nenhuma construção encontrada com esse nome.';c.appendChild(p);list.appendChild(c);return}
+  items.forEach(it=>{
+   const blocos=Array.isArray(it.blocos)?it.blocos:[];
+   const c=el('div','card save-card');
+   const img=el('img');img.alt='Miniatura de '+it.nome;img.src=L.thumbSrc(it);c.appendChild(img);
+   const info=el('div','info');
+   const h=el('h3');h.textContent=it.nome||'Sem nome';info.appendChild(h);
+   const p=el('p');p.textContent=blocos.length+(blocos.length===1?' bloco':' blocos')+' · '+fmtDate(it.atualizado);info.appendChild(p);
+   const row=el('div','btns');
+   const b=el('button','pbtn','Abrir na Oficina');b.onclick=()=>openSaved(it.id);row.appendChild(b);
+   const d=el('button','pbtn del','Excluir');d.setAttribute('aria-label','Excluir '+(it.nome||'construção'));d.onclick=()=>askDelete(it);row.appendChild(d);
+   info.appendChild(row);c.appendChild(info);list.appendChild(c);
+  });
+ };
+ inp.addEventListener('input',()=>{critQuery=inp.value;draw()});
+ draw();
+}
+function askDelete(it){
+ const n=M.cityStore.countOf(it.id);
+ const extra=n?(' '+(n===1?'A cópia já colocada':'As '+n+' cópias já colocadas')+' em Minha Cidade '+(n===1?'continua':'continuam')+' no mapa.'):'';
+ askConfirm(it.nome||'Sem nome','Deseja realmente excluir esta construção?'+extra,'EXCLUIR',()=>{
+  if(L.remove(it.id)){toast('Construção excluída');renderCriacoes()}else toast('Não foi possível excluir. Tente novamente');
+ },{noLabel:'CANCELAR',danger:true});
+}
+
+/* ======================= CONFIGURAÇÕES ======================= */
+const CFG_ROWS=[
+ ['shadows','Sombras','Deixa as construções mais realistas. Desligue para ganhar desempenho.'],
+ ['eco','Modo econômico','Reduz a resolução da Oficina e da Minha Cidade para poupar bateria e deixar o jogo mais leve.'],
+ ['grid','Grade de construção','Mostra a grade no chão da Oficina e da Minha Cidade.'],
+ ['hints','Dicas na tela','Mostra a faixa de instruções na Oficina e na Minha Cidade.']
+];
+function renderConfig(){
+ const body=$('#configBody');body.innerHTML='';
+ const c=el('div','card');
+ CFG_ROWS.forEach(([k,t,d])=>{
+  const r=el('div','crow',`<div class="t"><b>${t}</b><span>${d}</span></div>`);
+  const s=el('button','sw','<i></i>');s.setAttribute('role','switch');s.setAttribute('aria-label',t);s.setAttribute('aria-checked',String(!!M.cfg[k]));
+  s.onclick=()=>{M.cfg[k]=!M.cfg[k];s.setAttribute('aria-checked',String(!!M.cfg[k]));
+   try{localStorage.setItem(CFG_KEY,JSON.stringify(M.cfg))}catch(e){}
+   if(M.oficina)M.oficina.applyConfig(M.cfg);
+   if(M.cidade)M.cidade.applyConfig(M.cfg);
+   toast(t+': '+(M.cfg[k]?'ligado':'desligado'))};
+  r.appendChild(s);c.appendChild(r);
+ });
+ body.appendChild(c);
+ body.appendChild(el('div','card','<h3>MUNDORA • VERSÃO 1.4</h3><p>SEU MUNDO. SUAS CRIAÇÕES.</p><p class="small">As configurações ficam salvas neste aparelho.</p>'));
+}
+
+L.list(); // garante a migração do salvamento antigo logo na abertura
+// primeira pintura do menu
+render('menu');
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{bgKey='';if(M.current==='menu')drawMenuBg()});
+})();
+
+</script>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const root=document.querySelector('#game');
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x9bd8ff);
+scene.fog=new THREE.Fog(0x9bd8ff,24,65);
+const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,150);
+let radius=13, azimuth=Math.PI/4, polar=1.02;
+const target=new THREE.Vector3(0,0,0);
+function updateCamera(){camera.position.set(target.x+radius*Math.sin(polar)*Math.cos(azimuth),target.y+radius*Math.cos(polar),target.z+radius*Math.sin(polar)*Math.sin(azimuth));camera.lookAt(target)}
+updateCamera();
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;root.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffffff,0x718090,2));
+const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(8,16,10);sun.castShadow=true;scene.add(sun);
+const materials=[
+ {name:'Grama',color:0x69ad43,top:0x83c95a,side:0x568b38},
+ {name:'Terra',color:0x95613d},{name:'Pedra',color:0x888b8d},
+ {name:'Madeira',color:0xa87542},{name:'Tábuas',color:0xc49a60},
+ {name:'Tijolo',color:0xa94e3e},{name:'Areia',color:0xd9c58a},
+ {name:'Vidro',color:0x9bdde5,transparent:true,opacity:.48},
+ {name:'Folhas',color:0x397b3e},{name:'Branco',color:0xe4e4dc},
+ {name:'Preto',color:0x34383e}
+];
+const TX_SW=i=>window.MUNDORA.tex.get(i).side.toDataURL();
+let selected=0;const toolbar=document.querySelector('#toolbar');
+materials.forEach((m,i)=>{const b=document.createElement('button');b.className='slot'+(i===0?' selected':'');b.innerHTML=`<span class="swatch" style="background:${'#'+m.color.toString(16).padStart(6,'0')}"></span><span>${m.name}</span>`;b.onclick=()=>{selected=i;document.querySelectorAll('.slot').forEach((x,j)=>x.classList.toggle('selected',j===i));say('Bloco selecionado: '+m.name)};b.firstChild.style.backgroundImage='url('+TX_SW(i)+')';toolbar.appendChild(b)});
+const cubeGeo=new THREE.BoxGeometry(1,1,1);
+const blocks=new Map();const meshes=[];
+let rev=0,savedRev=0,savedSig='',currentId=null,currentName='',epoch=0,busy=false;
+function key(x,y,z){return `${x},${y},${z}`}
+const TX=window.MUNDORA.tex,matCache=[];
+function texFor(c){const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;t.colorSpace=THREE.SRGBColorSpace;return t}
+// Texturas 16×16 pixeladas (filtro NEAREST = pixels nítidos). Materiais compartilhados entre todos os blocos do mesmo tipo.
+function makeMat(i){
+ if(matCache[i])return matCache[i];
+ const m=materials[i],T=TX.get(i),mk=(c,o)=>new THREE.MeshLambertMaterial(Object.assign({map:texFor(c)},o||{}));
+ if(T.top!==T.side||T.bottom!==T.side){const side=mk(T.side),top=mk(T.top),bot=mk(T.bottom);matCache[i]=[side,side,top,bot,side,side]}   // ordem: +x,-x,topo,base,+z,-z
+ else matCache[i]=mk(T.side,m.transparent?{transparent:true}:null);
+ return matCache[i]}
+function addBlock(x,y,z,type){const k=key(x,y,z);if(blocks.has(k))return;rev++;const mesh=new THREE.Mesh(cubeGeo,makeMat(type));mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData={x,y,z,type};scene.add(mesh);blocks.set(k,mesh);meshes.push(mesh)}
+function removeBlock(mesh){rev++;const d=mesh.userData;scene.remove(mesh);blocks.delete(key(d.x,d.y,d.z));const n=meshes.indexOf(mesh);if(n>=0)meshes.splice(n,1)}
+// Invisible placement plane: first block is placed at ground level; no prebuilt terrain.
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),new THREE.MeshBasicMaterial({visible:false,side:THREE.DoubleSide}));ground.rotation.x=-Math.PI/2;ground.position.y=-.501;scene.add(ground);
+const grid=new THREE.GridHelper(40,40,0x66859b,0x8eb1c3);grid.position.y=-.495;grid.material.transparent=true;grid.material.opacity=.20;scene.add(grid);
+const ray=new THREE.Raycaster();const pointer=new THREE.Vector2();
+function hitAt(e){const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(meshes,false);if(hits.length)return hits[0];const p=ray.intersectObject(ground);return p[0]||null}
+function act(e,remove=false){const hit=hitAt(e);if(!hit)return;if(remove){if(hit.object.userData&&hit.object.userData.type!==undefined){removeBlock(hit.object);updateStatus();}return}
+ if(hit.object===ground){const p=hit.point;addBlock(Math.round(p.x),0,Math.round(p.z),selected)}
+ else {const n=hit.face.normal.clone().transformDirection(hit.object.matrixWorld);const p=hit.object.position.clone().add(n);addBlock(Math.round(p.x),Math.round(p.y),Math.round(p.z),selected)}
+ updateStatus()}
+let down=null,holdTimer=null,held=false,moved=false;
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.target!==renderer.domElement)return;down={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,id:e.pointerId};held=false;moved=false;renderer.domElement.setPointerCapture(e.pointerId);holdTimer=setTimeout(()=>{if(down&&!moved){held=true;act({clientX:down.x,clientY:down.y},true)}},520)});
+renderer.domElement.addEventListener('pointermove',e=>{if(!down||down.id!==e.pointerId)return;const dx=e.clientX-down.lastX,dy=e.clientY-down.lastY;if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>7){moved=true;clearTimeout(holdTimer)}if(moved){azimuth-=dx*.008;polar=Math.max(.25,Math.min(1.48,polar+dy*.006));updateCamera()}down.lastX=e.clientX;down.lastY=e.clientY});
+renderer.domElement.addEventListener('pointerup',e=>{if(!down)return;clearTimeout(holdTimer);if(!moved&&!held)act(e,false);down=null});
+renderer.domElement.addEventListener('pointercancel',()=>{clearTimeout(holdTimer);down=null});
+renderer.domElement.addEventListener('wheel',e=>{radius=Math.max(4,Math.min(35,radius+e.deltaY*.012));updateCamera()},{passive:true});
+let pinch=0;renderer.domElement.addEventListener('touchstart',e=>{if(e.touches.length===2)pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)},{passive:true});
+renderer.domElement.addEventListener('touchmove',e=>{if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(pinch){radius=Math.max(4,Math.min(35,radius-(d-pinch)*.035));updateCamera()}pinch=d}},{passive:true});
+function say(t){const el=document.querySelector('#toast');el.textContent=t;el.style.opacity=1;clearTimeout(say.timer);say.timer=setTimeout(()=>el.style.opacity=0,1500)}
+function short(t,n=18){t=String(t||'');return t.length>n?t.slice(0,n-1)+'…':t}
+function updateStatus(){document.querySelector('#status').textContent=`${currentId?short(currentName)+' · ':''}${blocks.size} blocos · ${materials[selected].name} selecionado`}
+function snapshot(){return [...blocks.values()].map(m=>m.userData)}
+const $q=q=>document.querySelector(q);
+const LIB=window.MUNDORA&&window.MUNDORA.lib;
+function clearWorld(){[...blocks.values()].forEach(removeBlock);updateStatus()}
+function sig(){return [...blocks.values()].map(m=>{const d=m.userData;return d.x+','+d.y+','+d.z+','+d.type}).sort().join(';')}
+function isDirty(){if(!blocks.size)return false;if(currentId&&!LIB.get(currentId))return true;return rev!==savedRev&&sig()!==savedSig}   // excluída da biblioteca = não está mais salva
+function resetProject(){clearWorld();currentId=null;currentName='';savedRev=rev;savedSig='';updateStatus()}
+// ---- Diálogos (simples, para toque) ----
+let nameDone=null,choiceDone=null;
+function askName(title,initial){
+ return new Promise(res=>{
+  const box=$q('#nameBox'),inp=$q('#nameInput'),err=$q('#nameErr');
+  $q('#nameTitle').textContent=title;inp.value=initial||'';err.textContent='';box.classList.add('on');
+  const finish=v=>{box.classList.remove('on');nameDone=null;res(v)};
+  nameDone=finish;
+  $q('#nameOk').onclick=()=>{const v=inp.value.trim().replace(/\s+/g,' ');if(!v){err.textContent='Digite um nome para a construção.';inp.focus();return}finish(v)};
+  $q('#nameNo').onclick=()=>finish(null);
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$q('#nameOk').click()}};
+  setTimeout(()=>{inp.focus();inp.select()},60);
+ });
+}
+function askChoice(title,msg,opts){
+ return new Promise(res=>{
+  const box=$q('#choiceBox'),wrap=$q('#choiceBtns');
+  $q('#choiceTitle').textContent=title;$q('#choiceMsg').textContent=msg;wrap.innerHTML='';
+  const finish=v=>{box.classList.remove('on');choiceDone=null;res(v)};
+  choiceDone=finish;
+  opts.forEach(o=>{const b=document.createElement('button');b.className='big '+(o.cls||'');b.textContent=o.label;b.onclick=()=>finish(o.value);wrap.appendChild(b)});
+  box.classList.add('on');
+ });
+}
+function closeAllDialogs(){epoch++;if(nameDone)nameDone(null);if(choiceDone)choiceDone(null)}
+// ---- Salvar (usado pelo botão Salvar e pelo Novo projeto) ----
+async function saveFlow(){
+ if(!blocks.size){say('A Oficina está vazia: construa algo antes de salvar');return false}
+ const my=epoch,cur=currentId?LIB.get(currentId):null;
+ let mode='new',name=null;
+ if(cur){
+  const c=await askChoice('Salvar construção','“'+cur.nome+'” já está em Minhas Criações. O que você prefere?',[
+   {label:'Atualizar “'+short(cur.nome,24)+'”',cls:'ok',value:'update'},
+   {label:'Salvar como nova cópia',value:'copy'},
+   {label:'Cancelar',value:null}]);
+  if(my!==epoch||!c)return false;
+  if(c==='update'){mode='update';name=cur.nome}
+  else{name=await askName('Nome da cópia',cur.nome+' (cópia)')}
+ }else{
+  name=await askName('Nome da construção',currentName||'');
+ }
+ if(my!==epoch||!name)return false;
+ const data=snapshot().map(b=>[b.x,b.y,b.z,b.type]),thumb=LIB.thumb(data);
+ let ok,id;
+ if(mode==='update'){id=cur.id;ok=LIB.update(id,{blocos:data,miniatura:thumb,tv:2})}
+ else{id=LIB.newId();ok=LIB.add({id,nome:name,blocos:data,miniatura:thumb,tv:2})}
+ if(!ok){say('Não foi possível salvar: a memória do aparelho está cheia');return false}
+ currentId=id;currentName=name;savedRev=rev;savedSig=sig();updateStatus();
+ say('Salvo em Minhas Criações: '+short(name,24));return true;
+}
+// ---- Novo projeto: salvar / descartar / cancelar ----
+async function newProject(){
+ if(!blocks.size||!isDirty()){resetProject();say('Novo projeto iniciado');return}
+ const my=epoch;
+ for(;;){
+  const who=currentId?'“'+currentName+'” tem':'Sua construção tem';
+  const c=await askChoice('Novo projeto',who+' alterações que ainda não foram salvas. O que deseja fazer?',[
+   {label:'Salvar e começar novo projeto',cls:'ok',value:'save'},
+   {label:'Descartar e começar novo projeto',cls:'bad',value:'discard'},
+   {label:'Cancelar',value:null}]);
+  if(my!==epoch)return;
+  if(c==='save'){const ok=await saveFlow();if(my!==epoch)return;if(ok){resetProject();say('Salvo! Novo projeto iniciado');return}continue}
+  if(c==='discard'){resetProject();say('Novo projeto iniciado')}
+  return;
+ }
+}
+function runFlow(fn){if(busy)return;busy=true;Promise.resolve().then(fn).catch(()=>say('Algo deu errado. Tente novamente')).finally(()=>{busy=false})}
+// ---- Abrir uma criação da biblioteca ----
+function openSaved(id){
+ const it=LIB.get(id);if(!it){say('Criação não encontrada');return false}
+ clearWorld();(it.blocos||[]).forEach(b=>{if(Array.isArray(b)&&materials[b[3]])addBlock(b[0],b[1],b[2],b[3])});
+ currentId=it.id;currentName=it.nome;savedRev=rev;savedSig=sig();centerGoal=constructionCenter();updateStatus();say('Aberta: '+short(it.nome,24));return true;
+}
+$q('#save').onclick=()=>runFlow(saveFlow);
+$q('#load').onclick=()=>window.MUNDORA.open('criacoes');   // escolhe a criação em Minhas Criações
+$q('#clear').onclick=()=>runFlow(newProject);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+// ---- Controles direcionais da câmera (painel lateral direito) ----
+const panKeys={up:false,down:false,left:false,right:false};
+const panPointers=new Map(); // pointerId -> direção
+const panVec=new THREE.Vector3(),panRight=new THREE.Vector3(),panUp=new THREE.Vector3();
+let panSpeed=0,centerGoal=null;
+function clampTarget(){target.x=Math.max(-60,Math.min(60,target.x));target.z=Math.max(-60,Math.min(60,target.z));target.y=Math.max(-2,Math.min(40,target.y))}
+function refreshPanKeys(){panKeys.up=panKeys.down=panKeys.left=panKeys.right=false;panPointers.forEach(d=>panKeys[d]=true);document.querySelectorAll('#dpad [data-dir]').forEach(b=>b.classList.toggle('on',panKeys[b.dataset.dir]))}
+function releasePan(e){if(panPointers.delete(e.pointerId))refreshPanKeys()}
+document.querySelectorAll('#dpad [data-dir]').forEach(b=>{
+ b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();try{b.setPointerCapture(e.pointerId)}catch(_){}panPointers.set(e.pointerId,b.dataset.dir);centerGoal=null;refreshPanKeys()});
+ ['pointerup','pointercancel','lostpointercapture'].forEach(t=>b.addEventListener(t,releasePan));
+ b.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')releasePan(e)});
+});
+document.querySelector('#dpad').addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('blur',()=>{panPointers.clear();refreshPanKeys()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){panPointers.clear();refreshPanKeys()}});
+function constructionCenter(){if(!blocks.size)return new THREE.Vector3(0,0,0);const mn=new THREE.Vector3(1e9,1e9,1e9),mx=new THREE.Vector3(-1e9,-1e9,-1e9);blocks.forEach(m=>{const p=m.position;mn.min(p);mx.max(p)});return mn.add(mx).multiplyScalar(.5)}
+document.querySelector('#camCenter').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();centerGoal=constructionCenter();say('Câmera centralizada')});
+let lastT=performance.now();
+function stepCamera(now){
+ const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
+ const dx=(panKeys.right?1:0)-(panKeys.left?1:0),dy=(panKeys.up?1:0)-(panKeys.down?1:0);
+ if(dx||dy){
+  panSpeed=Math.min(1,panSpeed+dt*7); // acelera suavemente; ao soltar, para na hora
+  camera.updateMatrixWorld();panRight.setFromMatrixColumn(camera.matrixWorld,0);panUp.setFromMatrixColumn(camera.matrixWorld,1);
+  const v=radius*.55*panSpeed*dt; // velocidade proporcional ao zoom
+  panVec.set(0,0,0).addScaledVector(panRight,dx).addScaledVector(panUp,dy);
+  if(panVec.lengthSq()>0){panVec.normalize().multiplyScalar(v);target.add(panVec);clampTarget();updateCamera()}
+ } else {
+  panSpeed=0;
+  if(centerGoal){const k=1-Math.pow(.0005,dt);target.lerp(centerGoal,k);if(target.distanceToSquared(centerGoal)<1e-4){target.copy(centerGoal);centerGoal=null}updateCamera()}
+ }
+}
+// ---- Integração com o menu MUNDORA: a Oficina só renderiza enquanto está na tela ----
+let raf=0;
+function animate(now){raf=requestAnimationFrame(animate);stepCamera(now||performance.now());renderer.render(scene,camera)}
+function applyConfig(c){sun.castShadow=!!c.shadows;renderer.setPixelRatio(c.eco?1:Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);grid.visible=!!c.grid;const h=document.querySelector('.hint');if(h)h.style.display=c.hints?'':'none'}
+function enter(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);updateStatus();lastT=performance.now();if(!raf)raf=requestAnimationFrame(animate)}
+function leave(){closeAllDialogs();cancelAnimationFrame(raf);raf=0;panPointers.clear();refreshPanKeys();clearTimeout(holdTimer);down=null}
+updateStatus();
+const MD=window.MUNDORA;
+if(MD){
+ MD.oficina={enter,leave,applyConfig,count:()=>blocks.size,openSaved,isDirty};
+ applyConfig(MD.cfg);
+ if(MD.pendingOpenSaved){const pid=MD.pendingOpenSaved;MD.pendingOpenSaved=null;openSaved(pid)}
+ document.querySelector('#oficinaLoading')?.classList.remove('on');
+ if(MD.current==='oficina')enter();
+}
+</script>
+<script type="module">
+/* ======================= MINHA CIDADE (mapa 3D) =======================
+   Módulo independente da Oficina. Usa a mesma biblioteca (MUNDORA.lib) e as mesmas texturas (MUNDORA.tex).
+   Estado salvo em 'mundora_city': { defs:{hash:{nome,blocos}}, items:[{id,cid,def,x,z,rot}] }.
+   Cada construção colocada guarda uma cópia (snapshot) dos blocos em defs: excluir a miniatura da biblioteca
+   não apaga nem altera as cópias já colocadas. Cópias idênticas compartilham a mesma definição. */
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const MD=window.MUNDORA,Q=s=>document.querySelector(s),LIB=MD.lib,TX=MD.tex,STORE=MD.cityStore;
+const MAP=48,EMIN=-24.5,EMAX=23.5,NTYPES=11,GLASS=7;
+const mapEl=Q('#cityMap'),host=Q('#cityGame'),barEl=Q('#cityBar');
+let scene,camera,renderer,sun,gridH,cityRoot,ghostGroup,ghostLine,selLine;
+let ready=false,raf=0,dirty=true,lastT=0;
+const target=new THREE.Vector3(-.5,0,-.5);
+let radius=40,azimuth=Math.PI/4,polar=.95,centerGoal=null;
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),.5),tmp=new THREE.Vector3(),box3=new THREE.Box3();
+const state=STORE.read();
+const geoCache=new Map(),matCache=new Map(),ghostMats=new Map(),inst=new Map();
+let placing=null,selected=null,query='';
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function say(t){const e=Q('#toast');if(!e)return;e.textContent=t;e.style.opacity=1;clearTimeout(say.t);say.t=setTimeout(()=>e.style.opacity=0,1700)}
+function newId(){return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function hash(b){const s=JSON.stringify(b);let h1=0xdeadbeef,h2=0x41c6ce57;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}
+ h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
+ return (4294967296*(2097151&h2)+(h1>>>0)).toString(36)+'_'+b.length.toString(36)}
+const validBlock=b=>Array.isArray(b)&&b.length>=4&&[b[0],b[1],b[2],b[3]].every(Number.isFinite)&&(b[3]|0)>=0&&(b[3]|0)<NTYPES;
+const cleanBlocks=a=>(Array.isArray(a)?a:[]).filter(validBlock).map(b=>[b[0]|0,b[1]|0,b[2]|0,b[3]|0]);
+
+/* ---------- geometria: um único mesh por construção, só com as faces visíveis ---------- */
+const FACES=[
+ {n:[1,0,0],k:'side',c:[[.5,-.5,.5],[.5,-.5,-.5],[.5,.5,-.5],[.5,.5,.5]]},
+ {n:[-1,0,0],k:'side',c:[[-.5,-.5,-.5],[-.5,-.5,.5],[-.5,.5,.5],[-.5,.5,-.5]]},
+ {n:[0,1,0],k:'top',c:[[-.5,.5,.5],[.5,.5,.5],[.5,.5,-.5],[-.5,.5,-.5]]},
+ {n:[0,-1,0],k:'bottom',c:[[-.5,-.5,-.5],[.5,-.5,-.5],[.5,-.5,.5],[-.5,-.5,.5]]},
+ {n:[0,0,1],k:'side',c:[[-.5,-.5,.5],[.5,-.5,.5],[.5,.5,.5],[-.5,.5,.5]]},
+ {n:[0,0,-1],k:'side',c:[[.5,-.5,-.5],[-.5,-.5,-.5],[-.5,.5,-.5],[.5,.5,-.5]]}
+];
+const UVS=[[0,0],[1,0],[1,1],[0,1]];
+function buildGeo(blocos){
+ const cells=new Map();let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9,z0=1e9,z1=-1e9;
+ for(const b of blocos){const x=b[0],y=b[1],z=b[2];cells.set(x+','+y+','+z,{x,y,z,t:b[3]});
+  if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;if(z<z0)z0=z;if(z>z1)z1=z}
+ if(!cells.size)return null;
+ const px=Math.floor((x0+x1)/2),pz=Math.floor((z0+z1)/2),slots=new Map();
+ cells.forEach(c=>{
+  const T=TX.get(c.t),uni=T.top===T.side&&T.bottom===T.side;
+  for(const f of FACES){
+   const nb=cells.get((c.x+f.n[0])+','+(c.y+f.n[1])+','+(c.z+f.n[2]));
+   if(nb&&!(nb.t===GLASS&&c.t!==GLASS))continue;           // face encostada em outro bloco: não aparece
+   const kind=uni?'s':f.k,name=c.t+':'+kind;let s=slots.get(name);
+   if(!s){s={type:c.t,kind,pos:[],nor:[],uv:[],idx:[],n:0};slots.set(name,s)}
+   for(let j=0;j<4;j++){s.pos.push(c.x-px+f.c[j][0],c.y-y0+f.c[j][1],c.z-pz+f.c[j][2]);s.nor.push(f.n[0],f.n[1],f.n[2]);s.uv.push(UVS[j][0],UVS[j][1])}
+   const b=s.n;s.idx.push(b,b+1,b+2,b,b+2,b+3);s.n+=4;
+  }
+ });
+ let nv=0,ni=0;slots.forEach(s=>{nv+=s.n;ni+=s.idx.length});
+ const pos=new Float32Array(nv*3),nor=new Float32Array(nv*3),uv=new Float32Array(nv*2),idx=nv>65535?new Uint32Array(ni):new Uint16Array(ni);
+ const geo=new THREE.BufferGeometry(),list=[];let vo=0,io=0,gi=0;
+ slots.forEach(s=>{
+  pos.set(s.pos,vo*3);nor.set(s.nor,vo*3);uv.set(s.uv,vo*2);
+  for(let i=0;i<s.idx.length;i++)idx[io+i]=s.idx[i]+vo;
+  geo.addGroup(io,s.idx.length,gi++);list.push({type:s.type,kind:s.kind});vo+=s.n;io+=s.idx.length;
+ });
+ geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('normal',new THREE.BufferAttribute(nor,3));geo.setAttribute('uv',new THREE.BufferAttribute(uv,2));
+ geo.setIndex(new THREE.BufferAttribute(idx,1));
+ return {geo,slots:list,tris:ni/3,bbox:{x0:x0-px,x1:x1-px,z0:z0-pz,z1:z1-pz,h:y1-y0}};
+}
+function texFor(c,rx,ry){const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;t.colorSpace=THREE.SRGBColorSpace;
+ if(rx){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry)}return t}
+function slotMat(s){const k=s.type+':'+s.kind;let m=matCache.get(k);
+ if(!m){const T=TX.get(s.type);m=new THREE.MeshLambertMaterial({map:texFor(s.kind==='s'?T.side:T[s.kind]),transparent:s.type===GLASS});matCache.set(k,m)}return m}
+function ghostMat(m){let g=ghostMats.get(m);if(!g){g=m.clone();g.transparent=true;g.opacity=.55;g.depthWrite=false;ghostMats.set(m,g)}return g}
+function makeGroup(def,ghost){const g=new THREE.Group(),m=new THREE.Mesh(def.geo,def.slots.map(s=>ghost?ghostMat(slotMat(s)):slotMat(s)));
+ if(!ghost){m.castShadow=true;m.receiveShadow=true}g.add(m);return g}
+function getDef(key){let d=geoCache.get(key);if(!d&&state.defs[key]){d=buildGeo(cleanBlocks(state.defs[key].blocos));if(d)geoCache.set(key,d)}return d||null}
+function prune(){geoCache.forEach((d,k)=>{if(!state.defs[k]&&!(placing&&placing.key===k)){d.geo.dispose();geoCache.delete(k)}})}
+
+/* ---------- geometria 2D: pegada da construção (girada em passos de 90°) ---------- */
+function rot90(x,z,r){switch(r&3){case 0:return[x,z];case 1:return[z,-x];case 2:return[-x,-z];default:return[-z,x]}}
+function localRect(b,r){const p=[[b.x0-.5,b.z0-.5],[b.x1+.5,b.z0-.5],[b.x0-.5,b.z1+.5],[b.x1+.5,b.z1+.5]].map(q=>rot90(q[0],q[1],r));
+ return {x0:Math.min(...p.map(q=>q[0])),x1:Math.max(...p.map(q=>q[0])),z0:Math.min(...p.map(q=>q[1])),z1:Math.max(...p.map(q=>q[1]))}}
+function worldRect(def,r,x,z){const l=localRect(def.bbox,r);return {x0:x+l.x0,x1:x+l.x1,z0:z+l.z0,z1:z+l.z1,h:def.bbox.h}}
+function clampAxis(p,a0,a1){const lo=Math.ceil(EMIN-a0-1e-9),hi=Math.floor(EMAX-a1+1e-9);return lo>hi?Math.round((lo+hi)/2):clamp(p,lo,hi)}
+function clampPivot(def,r,x,z){const l=localRect(def.bbox,r);return {x:clampAxis(x,l.x0,l.x1),z:clampAxis(z,l.z0,l.z1)}}
+const overlap=(a,b)=>a.x0<b.x1-1e-6&&a.x1>b.x0+1e-6&&a.z0<b.z1-1e-6&&a.z1>b.z0+1e-6;
+
+/* ---------- cena ---------- */
+function init(){
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd8ff);scene.fog=new THREE.Fog(0x9bd8ff,75,180);
+ camera=new THREE.PerspectiveCamera(48,1,.1,300);
+ renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+ renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
+ host.appendChild(renderer.domElement);
+ scene.add(new THREE.HemisphereLight(0xffffff,0x718090,2));
+ sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(18,40,24);sun.target.position.set(-.5,0,-.5);scene.add(sun.target);scene.add(sun);
+ sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-36,right:36,top:36,bottom:-36,near:1,far:120});sun.shadow.bias=-.0006;
+ // chão: bloco gigante de grama + terra + pedra, com as mesmas texturas 16×16 repetidas célula a célula
+ const g0=TX.get(0),dirt=TX.get(1),stone=TX.get(2);
+ const mat=(c,rx,ry)=>new THREE.MeshLambertMaterial({map:texFor(c,rx,ry)});
+ const layer=(y,m)=>{const mesh=new THREE.Mesh(new THREE.BoxGeometry(MAP,1,MAP),m);mesh.position.set(-.5,y,-.5);mesh.receiveShadow=true;scene.add(mesh)};
+ layer(-1,[mat(g0.side,MAP,1),mat(g0.side,MAP,1),mat(g0.top,MAP,MAP),mat(dirt.bottom,MAP,MAP),mat(g0.side,MAP,1),mat(g0.side,MAP,1)]);
+ layer(-2,mat(dirt.side,MAP,1));layer(-3,mat(stone.side,MAP,1));
+ gridH=new THREE.GridHelper(MAP,MAP,0x3f6b2e,0x3f6b2e);gridH.position.set(-.5,-.49,-.5);gridH.material.transparent=true;gridH.material.opacity=.28;scene.add(gridH);
+ cityRoot=new THREE.Group();scene.add(cityRoot);
+ ghostGroup=new THREE.Group();ghostGroup.visible=false;scene.add(ghostGroup);
+ const lineMat=c=>{const m=new THREE.LineBasicMaterial({color:c});m.depthTest=false;return m};
+ ghostLine=new THREE.LineSegments(new THREE.BufferGeometry(),lineMat(0x62ff62));ghostLine.visible=false;ghostLine.renderOrder=10;scene.add(ghostLine);
+ selLine=new THREE.LineSegments(new THREE.BufferGeometry(),lineMat(0xffe14a));selLine.visible=false;selLine.renderOrder=10;scene.add(selLine);
+ renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+ bindPointer(renderer.domElement);
+ if(window.ResizeObserver)new ResizeObserver(()=>{if(ready)resize()}).observe(mapEl);
+ addEventListener('resize',()=>{if(ready)resize()});
+ state.items.forEach(it=>{if(!addInstance(it))console.warn('Construção ignorada (dados inválidos):',it.id)});
+}
+function resize(){const w=mapEl.clientWidth,h=mapEl.clientHeight;if(!renderer||!w||!h)return;
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,MD.cfg.eco?1:2));renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();dirty=true}
+function applyConfig(c){if(!ready)return;sun.castShadow=!!c.shadows;gridH.visible=!!c.grid;Q('#cityHint').hidden=!c.hints;renderer.shadowMap.needsUpdate=true;resize();dirty=true}
+function updateCamera(){const sp=Math.sin(polar);camera.position.set(target.x+radius*sp*Math.cos(azimuth),target.y+radius*Math.cos(polar),target.z+radius*sp*Math.sin(azimuth));camera.lookAt(target);camera.updateMatrixWorld()}
+
+/* ---------- instâncias ---------- */
+function addInstance(it){const d=getDef(it.def);if(!d)return false;
+ const g=makeGroup(d,false);g.position.set(it.x,0,it.z);g.rotation.y=(it.rot&3)*Math.PI/2;cityRoot.add(g);
+ inst.set(it.id,{item:it,group:g,def:d,rect:worldRect(d,it.rot,it.x,it.z)});return true}
+function persist(){return STORE.write(state)}
+function updateCount(){const n=inst.size;Q('#cityCount').textContent=n+(n===1?' construção':' construções')}
+function touchScene(){renderer.shadowMap.needsUpdate=true;dirty=true}
+
+/* ---------- ponteiros: arrastar = girar câmera · pinça = zoom · prévia = arrastar/tocar ---------- */
+function ndcOf(e){const r=renderer.domElement.getBoundingClientRect();ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera)}
+function groundAt(e){ndcOf(e);const p=ray.ray.intersectPlane(plane,tmp);return p?{x:p.x,z:p.z}:null}
+function hitRect(r,e){ndcOf(e);box3.min.set(r.x0,-.5,r.z0);box3.max.set(r.x1,r.h+.5,r.z1);const p=ray.ray.intersectBox(box3,tmp);return p?p.distanceTo(ray.ray.origin):null}
+function pickInstance(e){let best=null,bd=1e12;inst.forEach((v,id)=>{const d=hitRect(v.rect,e);if(d!==null&&d<bd){bd=d;best=id}});return best}
+function bindPointer(dom){
+ const ptrs=new Map();let down=null,pinch=0;
+ const dist=()=>{const a=[...ptrs.values()];return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1};
+ dom.addEventListener('pointerdown',e=>{
+  try{dom.setPointerCapture(e.pointerId)}catch(_){}
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});centerGoal=null;
+  if(ptrs.size===2){down=null;pinch=dist();return}
+  if(ptrs.size>2)return;
+  down={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,ghost:false,ox:0,oz:0};
+  if(placing){const r=worldRect(placing.def,placing.rot,placing.x,placing.z),d=hitRect(r,e);
+   if(d!==null){const g=groundAt(e);down.ghost=true;if(g){down.ox=placing.x-g.x;down.oz=placing.z-g.z}}}
+ });
+ dom.addEventListener('pointermove',e=>{
+  const p=ptrs.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+  if(ptrs.size===2){const d=dist();radius=clamp(radius*(pinch/d),7,75);pinch=d;dirty=true;return}
+  if(!down||down.id!==e.pointerId)return;
+  if(!down.moved&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>8)down.moved=true;
+  if(!down.moved)return;
+  if(down.ghost&&placing){const g=groundAt(e);if(g){placing.x=Math.round(g.x+down.ox);placing.z=Math.round(g.z+down.oz);updateGhost()}}
+  else{azimuth-=dx*.008;polar=clamp(polar-dy*.006,.15,1.45);dirty=true}
+ });
+ const end=e=>{
+  const was=ptrs.size;ptrs.delete(e.pointerId);
+  if(was===2){down=null;pinch=0;return}
+  if(down&&down.id===e.pointerId){const d=down;down=null;if(!d.moved&&e.type==='pointerup')tap(e)}
+ };
+ dom.addEventListener('pointerup',end);dom.addEventListener('pointercancel',end);
+ dom.addEventListener('wheel',e=>{e.preventDefault();radius=clamp(radius*(e.deltaY>0?1.1:.9),7,75);dirty=true},{passive:false});
+}
+function tap(e){
+ if(placing){const g=groundAt(e);if(g){placing.x=Math.round(g.x);placing.z=Math.round(g.z);updateGhost()}return}
+ const id=pickInstance(e);if(id)select(id);else clearSelection();
+}
+
+/* ---------- prévia e posicionamento ---------- */
+function setOutline(line,r,color){
+ line.geometry.dispose();const bg=new THREE.BoxGeometry(r.x1-r.x0+.06,r.h+1.06,r.z1-r.z0+.06);line.geometry=new THREE.EdgesGeometry(bg);bg.dispose();
+ line.position.set((r.x0+r.x1)/2,r.h/2,(r.z0+r.z1)/2);line.material.color.setHex(color);line.visible=true}
+function updateGhost(){
+ if(!placing){ghostGroup.visible=false;ghostLine.visible=false;dirty=true;return}
+ const p=placing,c=clampPivot(p.def,p.rot,p.x,p.z);p.x=c.x;p.z=c.z;
+ ghostGroup.position.set(p.x,0,p.z);ghostGroup.rotation.y=(p.rot&3)*Math.PI/2;ghostGroup.visible=true;
+ const r=worldRect(p.def,p.rot,p.x,p.z);let over=false;inst.forEach(v=>{if(overlap(r,v.rect))over=true});
+ p.over=over;setOutline(ghostLine,r,over?0xffa23a:0x62ff62);dirty=true;
+}
+function startPlacing(it){
+ const blocos=cleanBlocks(it.blocos);if(!blocos.length){say('Esta construção está vazia');return}
+ const key=hash(blocos);let def=geoCache.get(key);if(!def){def=buildGeo(blocos);if(!def){say('Não foi possível montar esta construção');return}geoCache.set(key,def)}
+ clearSelection();ghostGroup.clear();ghostGroup.add(makeGroup(def,true).children[0]);
+ placing={libId:it.id,nome:it.nome||'Construção',blocos,key,def,x:Math.round(target.x),z:Math.round(target.z),rot:0,over:false};
+ updateGhost();Q('#nudgePad').hidden=false;showBar();renderLib();prune();
+}
+function cancelPlacing(){
+ placing=null;ghostGroup.clear();updateGhost();Q('#nudgePad').hidden=true;showBar();renderLib();prune();
+}
+function askPlace(){
+ if(!placing)return;
+ MD.askConfirm('Posicionar construção','Deseja realmente colocar esta construção aqui?','CONFIRMAR',commit,{noLabel:'CANCELAR'});
+}
+function commit(){
+ if(!placing)return;
+ const p=placing,item={id:newId(),cid:p.libId,def:p.key,x:p.x,z:p.z,rot:p.rot&3},hadDef=!!state.defs[p.key];
+ if(!hadDef)state.defs[p.key]={nome:p.nome,blocos:p.blocos};
+ state.items.push(item);
+ if(!persist()){state.items.pop();if(!hadDef)delete state.defs[p.key];say('Memória do aparelho cheia: a cidade não pôde ser salva. A construção não foi colocada.');return}
+ addInstance(item);updateCount();touchScene();cancelPlacing();say('Construção colocada em Minha Cidade');
+}
+function nudge(dir){
+ if(!placing)return;
+ const fx=-Math.cos(azimuth),fz=-Math.sin(azimuth),rx=-fz,rz=fx;           // frente e direita da tela, no chão
+ const v={up:[fx,fz],down:[-fx,-fz],right:[rx,rz],left:[-rx,-rz]}[dir];
+ if(Math.abs(v[0])>=Math.abs(v[1]))placing.x+=Math.sign(v[0]);else placing.z+=Math.sign(v[1]);
+ updateGhost();
+}
+function rotate(){if(!placing)return;placing.rot=(placing.rot+1)&3;updateGhost()}
+
+/* ---------- seleção e remoção de cópias ---------- */
+function select(id){const v=inst.get(id);if(!v)return;selected=id;setOutline(selLine,v.rect,0xffe14a);dirty=true;showBar()}
+function clearSelection(){selected=null;if(selLine){selLine.visible=false}dirty=true;showBar()}
+function askRemove(){
+ const v=selected&&inst.get(selected);if(!v)return;const id=selected;
+ MD.askConfirm('Remover do mapa','Deseja realmente remover esta construção do mapa? Ela continua salva em Minhas Criações.','REMOVER',()=>doRemove(id),{noLabel:'CANCELAR',danger:true});
+}
+function doRemove(id){
+ const v=inst.get(id),idx=state.items.findIndex(i=>i.id===id);if(!v||idx<0)return;
+ const [it]=state.items.splice(idx,1),oldDef=state.defs[it.def];let gone=false;
+ if(!state.items.some(i=>i.def===it.def)){delete state.defs[it.def];gone=true}
+ if(!persist()){state.items.splice(idx,0,it);if(gone)state.defs[it.def]=oldDef;say('Não foi possível salvar a cidade. Nada foi removido.');return}
+ cityRoot.remove(v.group);inst.delete(id);selected=null;selLine.visible=false;updateCount();prune();touchScene();showBar();say('Construção removida do mapa');
+}
+
+/* ---------- barra de ações e biblioteca (parte de baixo) ---------- */
+function btn(label,cls,fn){const b=document.createElement('button');b.className='cbtn '+(cls||'');b.textContent=label;b.onclick=fn;return b}
+function showBar(){
+ barEl.innerHTML='';
+ if(!placing&&!selected){barEl.hidden=true;Q('#cityHint').textContent=HINT_IDLE;return}
+ const info=document.createElement('div'),row=document.createElement('div');info.className='bar-info';row.className='bar-row';
+ if(placing){
+  info.textContent=placing.nome+(placing.over?' · sobrepõe outra construção':'')+' · arraste a prévia ou toque no mapa';
+  row.append(btn('⟳ GIRAR','',rotate),btn('POSICIONAR','ok big',askPlace),btn('CANCELAR','',cancelPlacing));
+  Q('#cityHint').textContent=HINT_PLACING;
+ }else{
+  const v=inst.get(selected);info.textContent=(state.defs[v.item.def]?state.defs[v.item.def].nome:'Construção')+' · selecionada';
+  row.append(btn('REMOVER','bad big',askRemove),btn('FECHAR','',clearSelection));
+ }
+ barEl.append(info,row);barEl.hidden=false;
+}
+const HINT_IDLE='Arraste: girar · pinça: zoom · toque numa construção para selecioná-la';
+const HINT_PLACING='Arraste a prévia ou toque no mapa para escolher o local';
+function renderLib(){
+ const strip=Q('#cityStrip');strip.innerHTML='';const all=LIB.list();
+ const note=(t,act)=>{const d=document.createElement('div');d.className='lnote';const s=document.createElement('span');s.textContent=t;d.appendChild(s);
+  if(act){const b=document.createElement('button');b.className='pbtn alt';b.style.margin='0';b.textContent=act;b.onclick=()=>MD.open('oficina');d.appendChild(b)}strip.appendChild(d)};
+ if(!all.length){note('Você ainda não tem construções salvas. Crie algo na Oficina e salve para usar aqui.','Ir para a Oficina');return}
+ const list=all.filter(i=>LIB.matches(i,query)).sort((a,b)=>(b.atualizado||0)-(a.atualizado||0));
+ if(!list.length){note('Nenhuma construção encontrada com esse nome.');return}
+ list.forEach(it=>{
+  const b=document.createElement('button'),on=placing&&placing.libId===it.id;b.className='lcard'+(on?' sel':'');b.setAttribute('aria-pressed',String(!!on));
+  const img=new Image();img.alt='';img.src=LIB.thumbSrc(it);const nm=document.createElement('span');nm.textContent=it.nome||'Sem nome';
+  b.append(img,nm);b.onclick=()=>{if(placing&&placing.libId===it.id)cancelPlacing();else startPlacing(it)};strip.appendChild(b);
+ });
+}
+Q('#citySearch').addEventListener('input',e=>{query=e.target.value;renderLib()});
+
+/* ---------- botões do mapa: câmera (contínuo), zoom, mover prévia ---------- */
+const panPtr=new Map(),pan={up:0,down:0,left:0,right:0};
+const refreshPan=()=>{pan.up=pan.down=pan.left=pan.right=0;panPtr.forEach(d=>pan[d]=1)};
+Q('#camPad').querySelectorAll('[data-dir]').forEach(b=>{
+ b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}panPtr.set(e.pointerId,b.dataset.dir);centerGoal=null;refreshPan()});
+ const up=e=>{panPtr.delete(e.pointerId);refreshPan()};
+ ['pointerup','pointercancel','lostpointercapture'].forEach(t=>b.addEventListener(t,up));
+});
+Q('#cityCenter').addEventListener('click',()=>{centerGoal=placing?new THREE.Vector3(placing.x,0,placing.z):new THREE.Vector3(-.5,0,-.5)});
+Q('#cityZoomIn').addEventListener('click',()=>{radius=clamp(radius*.8,7,75);dirty=true});
+Q('#cityZoomOut').addEventListener('click',()=>{radius=clamp(radius*1.25,7,75);dirty=true});
+let rep1=0,rep2=0;const stopRep=()=>{clearTimeout(rep1);clearInterval(rep2);rep1=rep2=0};
+Q('#nudgePad').querySelectorAll('[data-nudge]').forEach(b=>{
+ b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}stopRep();nudge(b.dataset.nudge);
+  rep1=setTimeout(()=>{rep2=setInterval(()=>nudge(b.dataset.nudge),110)},380)});
+ ['pointerup','pointercancel','lostpointercapture'].forEach(t=>b.addEventListener(t,stopRep));
+});
+
+/* ---------- laço de desenho (só desenha quando algo mudou: poupa bateria) ---------- */
+function loop(now){
+ raf=requestAnimationFrame(loop);const dt=Math.min(.05,(now-lastT)/1000||0);lastT=now;
+ if(pan.up||pan.down||pan.left||pan.right){
+  const fx=-Math.cos(azimuth),fz=-Math.sin(azimuth),rx=-fz,rz=fx,u=pan.up-pan.down,r=pan.right-pan.left,s=radius*.7*dt;
+  target.x=clamp(target.x+(fx*u+rx*r)*s,-26,25);target.z=clamp(target.z+(fz*u+rz*r)*s,-26,25);dirty=true;
+ }
+ if(centerGoal){target.lerp(centerGoal,1-Math.pow(.0005,dt));if(target.distanceToSquared(centerGoal)<.0004){target.copy(centerGoal);centerGoal=null}dirty=true}
+ if(dirty){dirty=false;updateCamera();renderer.render(scene,camera)}
+}
+function enter(){
+ try{if(!ready){init();ready=true}}
+ catch(err){console.error(err);const l=Q('#cityLoading');l.classList.add('on');l.querySelector('span').textContent='Não foi possível iniciar o mapa 3D neste aparelho.';return}
+ Q('#cityLoading').classList.remove('on');
+ applyConfig(MD.cfg);cancelPlacing();clearSelection();renderLib();updateCount();
+ lastT=performance.now();dirty=true;touchScene();if(!raf)raf=requestAnimationFrame(loop);
+}
+function leave(){
+ if(raf){cancelAnimationFrame(raf);raf=0}
+ panPtr.clear();refreshPan();stopRep();
+ if(ready){cancelPlacing();clearSelection()}
+}
+MD.cidade={enter,leave,applyConfig,
+ info:()=>({ready,count:inst.size,placing:placing?{x:placing.x,z:placing.z,rot:placing.rot,over:placing.over,nome:placing.nome}:null,selected,radius,azimuth,polar,target:{x:target.x,z:target.z},
+  tris:[...inst.values()].map(v=>v.def.tris),items:state.items.length,defs:Object.keys(state.defs).length})};
+if(MD.current==='cidade')enter();
+</script>
+</body></html>
