@@ -168,6 +168,37 @@ body:not([data-screen=oficina]) :is(#game,.top,#status,.hint,.toolbar,#dpad,#mod
 .lcard span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lcard.sel{border-color:#a5ff91;background:#2f5a2c;box-shadow:0 0 0 2px #74d66d66}
 .lnote{flex:1;display:flex;align-items:center;gap:10px;font-size:12.5px;color:#c3d0dc;padding:4px 2px}
+
+/* ---------- v1.5: gerenciador de cidades e editor de blocos ---------- */
+.bigact{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;min-height:84px;padding:14px 16px;margin:0 0 12px;border-radius:16px;border:3px solid #0b121a;color:#fff;text-align:left;box-shadow:inset 3px 3px 0 #ffffff30,0 5px 0 #0b121a;text-shadow:0 2px 0 #0006}
+.bigact b{font-size:19px;letter-spacing:.04em}.bigact span{font-size:12.5px;opacity:.95;font-weight:600}
+.bigact:active{transform:translateY(4px);box-shadow:inset 3px 3px 0 #ffffff30}
+.bigact.g{background:linear-gradient(#6fcf5c,#3d8c3f)}.bigact.o{background:linear-gradient(#ffb04a,#d9731a)}.bigact.r{background:linear-gradient(#e0605a,#a63a31)}
+.cprev{flex:none;width:150px;height:116px;border-radius:10px;border:2px solid #0b121a;object-fit:cover;background:linear-gradient(#7cc8ff,#c9ecff)}
+.cprev.ph{display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:800;color:#2d5a2a;background:linear-gradient(#bfe8ff,#d9f2c4)}
+.city-panel{flex:none;background:#17212b;border-top:2px solid #0b121a;padding:8px 10px;max-height:40vh;overflow:hidden;display:flex;flex-direction:column;gap:8px}
+.panel-head{display:flex;align-items:center;gap:8px}
+.panel-head b{flex:1;font-size:13px;letter-spacing:.06em}
+.panel-head small{font-size:11px;color:#c3d0dc}
+.pclose{min-height:40px;padding:6px 12px;border-radius:10px;border:2px solid #0b121a;background:linear-gradient(#3a4a5a,#26323e);color:#fff;font-weight:800;font-size:12px}
+.tools{display:flex;gap:8px}
+.tbtn{flex:1;min-height:42px;border-radius:10px;border:2px solid #0b121a;background:#26323e;color:#fff;font-weight:800;font-size:12px}
+.tbtn.sel,.mcard.sel{border-color:#a5ff91;background:#2f5a2c;box-shadow:0 0 0 2px #74d66d66}
+.mats{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.mats::-webkit-scrollbar{display:none}
+.mcard{flex:0 0 74px;width:74px;padding:6px 4px;border-radius:10px;border:2px solid #0b121a;background:#26323e;color:#fff;display:flex;flex-direction:column;gap:5px;align-items:center;font-size:11px;font-weight:700}
+.msw{display:block;width:46px;height:46px;border:2px solid #0b121a;border-radius:6px;background-size:100% 100%;image-rendering:pixelated;image-rendering:crisp-edges}
+.city-tabs{flex:none;display:flex;gap:8px;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));background:#0f1720;border-top:2px solid #0b121a}
+.tab{flex:1;min-height:58px;padding:6px 8px;border-radius:14px;border:2px solid #0b121a;background:linear-gradient(#3a4a5a,#26323e);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 2px 2px 0 #ffffff25,0 3px 0 #0b121a}
+.tab b{font-size:15px;letter-spacing:.05em;display:flex;align-items:center;gap:6px}
+.tab small{font-size:10.5px;font-weight:700;opacity:.92;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab.on{background:linear-gradient(#6fcf5c,#3d8c3f)}
+.tab:active{transform:translateY(3px);box-shadow:none}
+.tsw{display:inline-block;width:18px;height:18px;border:2px solid #0b121a;border-radius:4px;background-size:100% 100%;image-rendering:pixelated}
+.lvlbtns{position:absolute;z-index:3;right:8px;top:calc(env(safe-area-inset-top,0px) + 58px);display:flex;flex-direction:column;align-items:center;gap:4px}
+.lvlbtns button{width:44px;height:40px;padding:0;font-size:17px;border-radius:12px;background:#17212bdd;border:2px solid #0b121a;color:#fff}
+#lvlTxt{padding:3px 8px;border-radius:8px;background:#17212bdd;border:2px solid #0b121a;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}
+.city-top h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body data-screen="menu">
@@ -207,7 +238,7 @@ body:not([data-screen=oficina]) :is(#game,.top,#status,.hint,.toolbar,#dpad,#mod
     <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true"><g transform="translate(2.4 2.4) scale(.9) rotate(40 24 24)"><rect x="21" y="16" width="6" height="30" rx="1.5" fill="#a8743f" stroke="#3b2410" stroke-width="2"/><rect x="9" y="5" width="30" height="14" rx="2" fill="#dfe6ec" stroke="#2b3540" stroke-width="2"/><rect x="9" y="5" width="9" height="14" rx="2" fill="#9aa7b4" stroke="#2b3540" stroke-width="2"/></g></svg></span>
     <span class="txt"><b>OFICINA</b><small>Crie suas próprias construções</small></span><span class="chev">›</span>
    </button>
-   <button class="mbtn" data-go="cidade" style="--c:#5cb6ff;--c2:#2f78c4">
+   <button class="mbtn" data-go="cidades" style="--c:#5cb6ff;--c2:#2f78c4">
     <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 13l13-5v28l-13 5z" fill="#6fcf5c" stroke="#1d3b1a" stroke-width="2" stroke-linejoin="round"/><path d="M18 8l12 5v28l-12-5z" fill="#a6e38f" stroke="#1d3b1a" stroke-width="2" stroke-linejoin="round"/><path d="M30 13l13-5v28l-13 5z" fill="#4aa6ee" stroke="#0f2b45" stroke-width="2" stroke-linejoin="round"/><circle cx="24" cy="22" r="5" fill="#e5483a" stroke="#4a1410" stroke-width="2"/><circle cx="24" cy="22" r="1.8" fill="#fff"/></svg></span>
     <span class="txt"><b>MINHA CIDADE</b><small>Monte e povoe seu mundo</small></span><span class="chev">›</span>
    </button>
@@ -220,23 +251,39 @@ body:not([data-screen=oficina]) :is(#game,.top,#status,.hint,.toolbar,#dpad,#mod
     <span class="txt"><b>CONFIGURAÇÕES</b><small>Personalize sua experiência</small></span><span class="chev">›</span>
    </button>
   </nav>
-  <footer class="foot">MUNDORA • VERSÃO 1.4</footer>
+  <footer class="foot">MUNDORA • VERSÃO 1.5</footer>
  </div>
 </div>
 
 <!-- ===================== MUNDORA: TELAS INTERNAS ===================== -->
-<section id="s-cidade" class="screen city" aria-label="Minha Cidade">
+<section id="s-cidades" class="screen sub"><div class="sub-wrap"><div class="sub-in">
+ <div class="sub-head"><button class="back" id="cidadesBack">‹ Menu</button><h2 id="cidadesTitle">MINHA CIDADE</h2></div>
+ <div id="cidadesBody"></div>
+</div></div></section>
+<div id="cnameBox" class="ovl" role="dialog" aria-modal="true"><div class="dialog"><h2>Nova cidade</h2><p>Dê um nome ao seu novo mundo. Ele começa completamente vazio.</p><input id="cnameInput" class="sinput" type="text" maxlength="30" autocomplete="off" placeholder="Ex.: Vila Verde" aria-label="Nome da cidade"><p id="cnameErr" role="alert" style="min-height:18px;margin:6px 0 0;font-size:12px;color:#ff9b91"></p><div class="stack"><button class="big ok" id="cnameOk">Criar cidade</button><button class="big" id="cnameNo">Cancelar</button></div></div></div>
+<section id="s-cidade" class="screen city" aria-label="Editor da cidade">
  <div class="city-map" id="cityMap">
   <div id="cityGame"></div>
-  <div class="city-top"><button class="back" data-menu aria-label="Voltar ao menu principal">‹ Menu</button><h2>MINHA CIDADE</h2><span class="chip" id="cityCount">0 construções</span></div>
+  <div class="city-top"><button class="back" data-back aria-label="Voltar às cidades">‹ Cidades</button><h2 id="cityTitle">MINHA CIDADE</h2><span class="chip" id="cityCount">0 construções</span></div>
   <div class="city-hint" id="cityHint">Arraste: girar · pinça: zoom · toque numa construção para selecioná-la</div>
+  <div class="lvlbtns" id="lvlBox" hidden><button id="lvlUp" aria-label="Subir o nível">▲</button><div id="lvlTxt">Nível 0</div><button id="lvlDown" aria-label="Descer o nível">▼</button></div>
   <div class="zoombtns"><button id="cityZoomIn" aria-label="Aproximar">＋</button><button id="cityZoomOut" aria-label="Afastar">－</button></div>
   <div class="cpad nudge" id="nudgePad" hidden aria-label="Mover a prévia"><button class="up" data-nudge="up" aria-label="Mover a prévia para frente">▲</button><button class="left" data-nudge="left" aria-label="Mover a prévia para a esquerda">◀</button><span class="center ntxt">mover<br>prévia</span><button class="right" data-nudge="right" aria-label="Mover a prévia para a direita">▶</button><button class="down" data-nudge="down" aria-label="Mover a prévia para trás">▼</button></div>
   <div class="cpad" id="camPad" aria-label="Mover a câmera"><button class="up" data-dir="up" aria-label="Câmera para frente">▲</button><button class="left" data-dir="left" aria-label="Câmera para a esquerda">◀</button><button class="center" id="cityCenter" aria-label="Centralizar a câmera">✋</button><button class="right" data-dir="right" aria-label="Câmera para a direita">▶</button><button class="down" data-dir="down" aria-label="Câmera para trás">▼</button></div>
   <div id="cityLoading" class="on"><span>Carregando o mapa 3D…</span></div>
  </div>
  <div class="city-bar" id="cityBar" hidden></div>
- <div class="city-lib"><input id="citySearch" class="sinput" type="search" placeholder="Pesquisar construção pelo nome" autocomplete="off" aria-label="Pesquisar construção pelo nome"><div class="city-strip" id="cityStrip"></div></div>
+ <div class="city-panel" id="panelBlocks" hidden>
+  <div class="panel-head"><b>BLOCOS</b><small id="blocksInfo">0 blocos no mapa</small><button class="pclose" id="closeBlocks" aria-label="Fechar e voltar à construção">✕ Fechar</button></div>
+  <div class="tools"><button class="tbtn" id="toolView" aria-pressed="true">👆 Selecionar</button><button class="tbtn" id="toolErase" aria-pressed="false">⛏ Remover bloco</button></div>
+  <div class="mats" id="matStrip"></div>
+ </div>
+ <div class="city-panel" id="panelMinis" hidden>
+  <div class="panel-head"><b>MINIATURAS</b><button class="pclose" id="closeMinis" aria-label="Fechar e voltar à construção">✕ Fechar</button></div>
+  <input id="citySearch" class="sinput" type="search" placeholder="Pesquisar construção pelo nome" autocomplete="off" aria-label="Pesquisar construção pelo nome">
+  <div class="city-strip" id="cityStrip"></div>
+ </div>
+ <div class="city-tabs"><button class="tab" id="tabBlocks" aria-expanded="false"><b><i class="tsw" id="tabBlocksSw" hidden></i>BLOCOS</b><small id="tabBlocksSub">Escolher material</small></button><button class="tab" id="tabMinis" aria-expanded="false"><b>MINIATURAS</b><small id="tabMinisSub">Suas construções</small></button></div>
 </section>
 <section id="s-criacoes" class="screen sub"><div class="sub-wrap"><div class="sub-in">
  <div class="sub-head"><button class="back" data-back>‹ Voltar</button><h2>MINHAS CRIAÇÕES</h2></div>
@@ -480,22 +527,96 @@ Object.assign(L,{
   if(it.tv!==2||!it.miniatura){const m=L.thumb(b);if(m){it.miniatura=m;L.setThumb(it.id,m)}}   // miniaturas antigas (lisas) são redesenhadas com as texturas
   return it.miniatura||''}
 });
-/* ======================= ESTADO DA CIDADE =======================
-   'mundora_city': {v:1, defs:{hash:{nome,blocos}}, items:[{id,cid,def,x,z,rot}]} — gerenciado pelo módulo da Minha Cidade. */
-const CITY_KEY='mundora_city';
+/* ======================= CIDADES (cada uma com salvamento independente) =======================
+   'mundora_cities'  : índice [{id,nome,criado,atualizado,nb,ni,preview}]
+   'mundora_cd_<id>' : dados de UMA cidade {id,nome,blocks(RLE),defs,items} — excluir uma cidade remove só a sua chave. */
+const CITIES_KEY='mundora_cities',CD='mundora_cd_',WB={min:-64,max:63,ymin:-16,ymax:47};
+function packBlocks(list){
+ const g=new Map();for(const b of list){const k=b[1]+','+b[2]+','+b[3];let a=g.get(k);if(!a){a=[];g.set(k,a)}a.push(b[0])}
+ const out=[];g.forEach((xs,k)=>{const [y,z,t]=k.split(',').map(Number);xs.sort((p,q)=>p-q);let st=xs[0],n=1;
+  for(let i=1;i<xs.length;i++){if(xs[i]===xs[i-1]+1&&n<256)n++;else{out.push([y,z,t,st,n]);st=xs[i];n=1}}out.push([y,z,t,st,n])});
+ return out;
+}
+function unpackBlocks(rle){
+ const out=[];if(!Array.isArray(rle))return out;
+ for(const r of rle){if(!Array.isArray(r)||r.length<5)continue;const [y,z,t,x0,n]=r;
+  if(![y,z,t,x0,n].every(Number.isFinite)||t<0||t>10||n<1||n>256)continue;
+  for(let i=0;i<n;i++){const x=x0+i;if(x>=WB.min&&x<=WB.max&&z>=WB.min&&z<=WB.max&&y>=WB.ymin&&y<=WB.ymax)out.push([x,y,z,t|0])}}
+ return out;
+}
+function cleanDefs(o){const defs={};if(o&&typeof o==='object')for(const k in o){const d=o[k];if(d&&Array.isArray(d.blocos))defs[k]={nome:String(d.nome||'Construção'),blocos:d.blocos}}return defs}
+function cleanItems(a,defs){const items=[];if(Array.isArray(a))for(const i of a)if(i&&typeof i.id==='string'&&defs[i.def]&&isFinite(i.x)&&isFinite(i.z))items.push({id:i.id,cid:i.cid||null,def:i.def,x:i.x|0,y:isFinite(i.y)?i.y|0:0,z:i.z|0,rot:(i.rot|0)&3});return items}
 M.cityStore={
- read(){
-  let raw=null;try{raw=localStorage.getItem(CITY_KEY)}catch(e){}
-  const empty=()=>({defs:{},items:[]});if(!raw)return empty();
-  try{
-   const o=JSON.parse(raw),defs={},items=[];
-   if(o&&o.defs&&typeof o.defs==='object')for(const k in o.defs){const d=o.defs[k];if(d&&Array.isArray(d.blocos))defs[k]={nome:String(d.nome||'Construção'),blocos:d.blocos}}
-   if(o&&Array.isArray(o.items))for(const i of o.items)if(i&&typeof i.id==='string'&&defs[i.def]&&isFinite(i.x)&&isFinite(i.z))items.push({id:i.id,cid:i.cid||null,def:i.def,x:i.x|0,z:i.z|0,rot:(i.rot|0)&3});
-   return {defs,items};
-  }catch(e){try{localStorage.setItem(CITY_KEY+'_corrompida',raw)}catch(_){}return empty()}
+ _writeIdx(a){try{localStorage.setItem(CITIES_KEY,JSON.stringify(a));return true}catch(e){return false}},
+ _readIdx(){
+  let raw=null;try{raw=localStorage.getItem(CITIES_KEY)}catch(e){}
+  if(raw===null)return M.cityStore._init();
+  try{const a=JSON.parse(raw);if(Array.isArray(a))return a.filter(x=>x&&typeof x.id==='string')}catch(e){}
+  try{localStorage.setItem(CITIES_KEY+'_corrompida',raw)}catch(e){}
+  return M.cityStore._recover(true);
  },
- write(st){try{localStorage.setItem(CITY_KEY,JSON.stringify({v:1,defs:st.defs,items:st.items}));return true}catch(e){return false}},
- countOf(cid){return M.cityStore.read().items.filter(i=>i.cid===cid).length}
+ _recover(write){   // reconstrói o índice a partir dos dados das cidades (nunca perde uma cidade se só o índice se perdeu)
+  const out=[];
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(CD)){
+   const d=JSON.parse(localStorage.getItem(k));if(d&&d.id===k.slice(CD.length)){let nb=0;if(Array.isArray(d.blocks))for(const r of d.blocks)nb+=(r&&r[4])|0;
+    out.push({id:d.id,nome:String(d.nome||'Cidade'),criado:d.criado||0,atualizado:d.atualizado||0,nb,ni:Array.isArray(d.items)?d.items.length:0,preview:''})}}}}catch(e){}
+  if(write&&out.length)M.cityStore._writeIdx(out);return out;
+ },
+ _init(){
+  let a=M.cityStore._recover(false);if(a.length){M.cityStore._writeIdx(a);return a}
+  a=M.cityStore._migrateOld();M.cityStore._writeIdx(a);return a;
+ },
+ _migrateOld(){   // v1.4 tinha UMA cidade em 'mundora_city' sobre um chão fixo 48×48. Vira a cidade "Minha Cidade", com esse chão como blocos de grama reais.
+  let raw=null;try{raw=localStorage.getItem('mundora_city')}catch(e){}if(!raw)return [];
+  try{
+   const o=JSON.parse(raw),defs=cleanDefs(o&&o.defs),items=cleanItems(o&&o.items,defs);if(!items.length)return [];
+   const blocks=[];for(let x=-24;x<=23;x++)for(let z=-24;z<=23;z++)blocks.push([x,-1,z,0]);
+   const id=M.cityStore.newId(),t=Date.now(),rle=packBlocks(blocks);
+   localStorage.setItem(CD+id,JSON.stringify({v:2,id,nome:'Minha Cidade',criado:t,atualizado:t,blocks:rle,defs,items}));
+   return [{id,nome:'Minha Cidade',criado:t,atualizado:t,nb:blocks.length,ni:items.length,preview:''}];
+  }catch(e){return []}
+ },
+ newId(){return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)},
+ list(){return M.cityStore._readIdx()},
+ exists(id){return M.cityStore.list().some(c=>c.id===id)},
+ nameExists(nome){const n=L.norm(nome);return M.cityStore.list().some(c=>L.norm(c.nome)===n)},
+ create(nome){
+  const id=M.cityStore.newId(),t=Date.now();
+  try{localStorage.setItem(CD+id,JSON.stringify({v:2,id,nome,criado:t,atualizado:t,blocks:[],defs:{},items:[]}))}catch(e){return null}
+  const a=M.cityStore.list();a.push({id,nome,criado:t,atualizado:t,nb:0,ni:0,preview:''});
+  if(!M.cityStore._writeIdx(a)){try{localStorage.removeItem(CD+id)}catch(e){}return null}
+  return id;
+ },
+ load(id){
+  let raw=null;try{raw=localStorage.getItem(CD+id)}catch(e){}if(!raw)return null;
+  try{const o=JSON.parse(raw),defs=cleanDefs(o.defs);return {nome:String(o.nome||'Cidade'),blocks:unpackBlocks(o.blocks),defs,items:cleanItems(o.items,defs)}}
+  catch(e){try{localStorage.setItem(CD+id+'_corrompida',raw)}catch(_){}return null}
+ },
+ save(id,data,meta){
+  const a=M.cityStore.list(),i=a.findIndex(c=>c.id===id);if(i<0)return false;   // cidade excluída: nunca é recriada por acidente
+  const t=Date.now();
+  try{localStorage.setItem(CD+id,JSON.stringify({v:2,id,nome:a[i].nome,criado:a[i].criado,atualizado:t,blocks:packBlocks(data.blocks),defs:data.defs,items:data.items}))}catch(e){return false}
+  Object.assign(a[i],{atualizado:t,nb:meta.nb,ni:meta.ni});if(meta.preview)a[i].preview=meta.preview;
+  let ok=M.cityStore._writeIdx(a);if(!ok&&meta.preview){a[i].preview='';ok=M.cityStore._writeIdx(a)}
+  return ok;
+ },
+ remove(id){
+  const a=M.cityStore.list(),b=a.filter(c=>c.id!==id);if(b.length===a.length)return false;
+  try{localStorage.removeItem(CD+id)}catch(e){}
+  return M.cityStore._writeIdx(b);
+ },
+ countOf(cid){   // quantas cópias de uma criação existem em todas as cidades
+  let n=0;
+  for(const c of M.cityStore.list()){try{const o=JSON.parse(localStorage.getItem(CD+c.id));if(o&&Array.isArray(o.items))n+=o.items.filter(i=>i&&i.cid===cid).length}catch(e){}}
+  return n;
+ }
+};
+M.cityPreview=function(list){   // miniatura 2D (isométrica, texturizada) da cidade, sem depender de WebGL
+ try{
+  const cv=document.createElement('canvas');cv.width=240;cv.height=184;const ctx=cv.getContext('2d');skyFill(ctx,240,184);
+  fitDraw(ctx,list.map(k=>({x:k[0],y:k[2],z:k[1],c:texCol(k[3])})),10,10,220,164,26);
+  return cv.toDataURL('image/jpeg',.78);
+ }catch(e){return ''}
 };
 
 function askConfirm(title,text,okLabel,cb,o){
@@ -507,10 +628,10 @@ function askConfirm(title,text,okLabel,cb,o){
 M.askConfirm=askConfirm;
 
 /* ======================= NAVEGAÇÃO (compatível com o botão Voltar do Android) ======================= */
-const screens={menu:'#menu',cidade:'#s-cidade',criacoes:'#s-criacoes',config:'#s-config'};
+const screens={menu:'#menu',cidades:'#s-cidades',cidade:'#s-cidade',criacoes:'#s-criacoes',config:'#s-config'};
 function render(name){
  M.current=name;document.body.setAttribute('data-screen',name);
- $('#confirmBox').classList.remove('on');   // fecha confirmações ao trocar de tela (ex.: botão Voltar do Android)
+ $('#confirmBox').classList.remove('on');$('#cnameBox').classList.remove('on');   // fecha janelas ao trocar de tela (ex.: botão Voltar do Android)
  for(const k in screens)$(screens[k]).classList.toggle('on',k===name);
  const ofi=name==='oficina';
  $('#oficinaLoading').classList.toggle('on',ofi&&!M.oficina);
@@ -521,6 +642,7 @@ function render(name){
  if(M.cidade){if(cid)M.cidade.enter();else M.cidade.leave()}
  if(cid&&!M.cidade)setTimeout(()=>{if(M.current==='cidade'&&!M.cidade)$('#cityLoading span').textContent='Não foi possível carregar o motor 3D. Verifique sua conexão com a internet e recarregue a página.'},9000);
  if(name==='menu')requestAnimationFrame(drawMenuBg);
+ if(name==='cidades')renderCidades();
  if(name==='criacoes')renderCriacoes();
  if(name==='config')renderConfig();
  const sc=$$('.menu-wrap,.sub-wrap');sc.forEach(s=>s.scrollTop=0);
@@ -577,10 +699,68 @@ function renderCriacoes(){
 }
 function askDelete(it){
  const n=M.cityStore.countOf(it.id);
- const extra=n?(' '+(n===1?'A cópia já colocada':'As '+n+' cópias já colocadas')+' em Minha Cidade '+(n===1?'continua':'continuam')+' no mapa.'):'';
+ const extra=n?(' '+(n===1?'A cópia já colocada':'As '+n+' cópias já colocadas')+' em suas cidades '+(n===1?'continua':'continuam')+' no mapa.'):'';
  askConfirm(it.nome||'Sem nome','Deseja realmente excluir esta construção?'+extra,'EXCLUIR',()=>{
   if(L.remove(it.id)){toast('Construção excluída');renderCriacoes()}else toast('Não foi possível excluir. Tente novamente');
  },{noLabel:'CANCELAR',danger:true});
+}
+
+
+/* ======================= MINHA CIDADE: gerenciador (carregar / criar / excluir) ======================= */
+let cView='home';
+const CVIEW_TITLE={home:'MINHA CIDADE',load:'CARREGAR CIDADE',del:'EXCLUIR CIDADE'};
+function renderCidades(){cView='home';drawCidades()}
+function openCity(id){M.cidadeAtual=id;open('cidade')}
+function drawCidades(){
+ const body=$('#cidadesBody');body.innerHTML='';$('#cidadesTitle').textContent=CVIEW_TITLE[cView];
+ $('#cidadesBack').textContent=cView==='home'?'‹ Menu':'‹ Voltar';
+ const cities=M.cityStore.list().sort((a,b)=>(b.atualizado||0)-(a.atualizado||0));
+ if(cView==='home'){
+  const mk=(cls,t,d,fn)=>{const b=el('button','bigact '+cls);b.innerHTML='<b></b><span></span>';b.firstChild.textContent=t;b.lastChild.textContent=d;b.onclick=fn;body.appendChild(b);return b};
+  mk('g','CARREGAR CIDADE','Continue de onde você parou.',()=>{cView='load';drawCidades()}).id='btnCarregar';
+  mk('o','CRIAR NOVA CIDADE','Comece um mundo completamente vazio.',askCityName).id='btnCriar';
+  mk('r','EXCLUIR CIDADE','Apague uma cidade que você não quer mais.',()=>{cView='del';drawCidades()}).id='btnExcluir';
+  body.appendChild(el('div','chip',cities.length?(cities.length===1?'1 cidade salva':cities.length+' cidades salvas'):'Nenhuma cidade salva ainda'));
+  return;
+ }
+ if(!cities.length){
+  const c=el('div','card');c.appendChild(el('h3',null,'Nenhuma cidade salva'));c.appendChild(el('p',null,'Toque em CRIAR NOVA CIDADE para começar o seu mundo.'));
+  const b=el('button','pbtn','Criar nova cidade');b.onclick=askCityName;c.appendChild(b);body.appendChild(c);return;
+ }
+ cities.forEach(ct=>{
+  const c=el('div','card save-card');
+  if(ct.preview){const im=el('img','cprev');im.alt='Pré-visualização de '+ct.nome;im.src=ct.preview;c.appendChild(im)}
+  else{const ph=el('div','cprev ph');ph.innerHTML='mundo<br>vazio';c.appendChild(ph)}
+  const info=el('div','info');const h=el('h3');h.textContent=ct.nome;info.appendChild(h);
+  const p=el('p');p.textContent=(ct.nb||0)+((ct.nb||0)===1?' bloco':' blocos')+' · '+(ct.ni||0)+((ct.ni||0)===1?' construção':' construções')+' · '+fmtDate(ct.atualizado);info.appendChild(p);
+  const row=el('div','btns');
+  if(cView==='load'){const b=el('button','pbtn','Abrir');b.setAttribute('aria-label','Abrir '+ct.nome);b.onclick=()=>openCity(ct.id);row.appendChild(b)}
+  else{const d=el('button','pbtn del','Excluir');d.setAttribute('aria-label','Excluir '+ct.nome);d.onclick=()=>askDeleteCity(ct);row.appendChild(d)}
+  info.appendChild(row);c.appendChild(info);body.appendChild(c);
+ });
+}
+$('#cidadesBack').addEventListener('click',()=>{if(cView!=='home'){cView='home';drawCidades()}else back()});
+function askDeleteCity(ct){
+ askConfirm(ct.nome,'Deseja realmente excluir a cidade “'+ct.nome+'”? Todos os blocos e construções posicionadas nela serão apagados. As outras cidades e as criações da Oficina não são afetadas.','EXCLUIR',()=>{
+  if(M.cidade&&M.cidade.forget)M.cidade.forget(ct.id);
+  if(M.cityStore.remove(ct.id)){toast('Cidade excluída');drawCidades()}else toast('Não foi possível excluir. Tente novamente');
+ },{noLabel:'CANCELAR',danger:true});
+}
+function askCityName(){
+ const box=$('#cnameBox'),inp=$('#cnameInput'),err=$('#cnameErr');
+ inp.value='Cidade '+(M.cityStore.list().length+1);err.textContent='';box.classList.add('on');
+ const close=()=>box.classList.remove('on');
+ const ok=()=>{
+  const nome=inp.value.trim().replace(/\s+/g,' ');
+  if(!nome){err.textContent='Digite um nome para a cidade.';inp.focus();return}
+  if(M.cityStore.nameExists(nome)){err.textContent='Já existe uma cidade com esse nome.';inp.focus();return}
+  const id=M.cityStore.create(nome);
+  if(!id){err.textContent='Não foi possível criar: a memória do aparelho está cheia.';return}
+  close();openCity(id);
+ };
+ $('#cnameOk').onclick=ok;$('#cnameNo').onclick=close;
+ inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();ok()}};
+ setTimeout(()=>{inp.focus();inp.select()},60);
 }
 
 /* ======================= CONFIGURAÇÕES ======================= */
@@ -604,7 +784,7 @@ function renderConfig(){
   r.appendChild(s);c.appendChild(r);
  });
  body.appendChild(c);
- body.appendChild(el('div','card','<h3>MUNDORA • VERSÃO 1.4</h3><p>SEU MUNDO. SUAS CRIAÇÕES.</p><p class="small">As configurações ficam salvas neste aparelho.</p>'));
+ body.appendChild(el('div','card','<h3>MUNDORA • VERSÃO 1.5</h3><p>SEU MUNDO. SUAS CRIAÇÕES.</p><p class="small">As configurações ficam salvas neste aparelho.</p>'));
 }
 
 L.list(); // garante a migração do salvamento antigo logo na abertura
@@ -810,24 +990,33 @@ if(MD){
 }
 </script>
 <script type="module">
-/* ======================= MINHA CIDADE (mapa 3D) =======================
-   Módulo independente da Oficina. Usa a mesma biblioteca (MUNDORA.lib) e as mesmas texturas (MUNDORA.tex).
-   Estado salvo em 'mundora_city': { defs:{hash:{nome,blocos}}, items:[{id,cid,def,x,z,rot}] }.
-   Cada construção colocada guarda uma cópia (snapshot) dos blocos em defs: excluir a miniatura da biblioteca
-   não apaga nem altera as cópias já colocadas. Cópias idênticas compartilham a mesma definição. */
+/* ======================= MINHA CIDADE (editor 3D) =======================
+   Mundo VAZIO: nenhum bloco é criado automaticamente. O jogador constrói o terreno com blocos e pode colocar
+   miniaturas (construções da Oficina) por cima. Cada cidade tem salvamento independente ('mundora_cd_<id>').
+   Blocos: guardados em chunks de 16³; cada chunk vira UM mesh só com as faces visíveis (poucas chamadas de desenho).
+   Miniaturas: cada cópia é uma instância independente; a cidade guarda uma cópia (snapshot) dos blocos da original. */
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const MD=window.MUNDORA,Q=s=>document.querySelector(s),LIB=MD.lib,TX=MD.tex,STORE=MD.cityStore;
-const MAP=48,EMIN=-24.5,EMAX=23.5,NTYPES=11,GLASS=7;
+const WMIN=-64,WMAX=63,YMIN=-16,YMAX=47,EMIN=WMIN-.5,EMAX=WMAX+.5,NTYPES=11,GLASS=7,CH=16;
+const MAT_NAMES=['Grama','Terra','Pedra','Madeira','Tábuas','Tijolo','Areia','Vidro','Folhas','Branco','Preto'];
 const mapEl=Q('#cityMap'),host=Q('#cityGame'),barEl=Q('#cityBar');
-let scene,camera,renderer,sun,gridH,cityRoot,ghostGroup,ghostLine,selLine;
+let scene,camera,renderer,sun,gridH,refGroup,terrainRoot,cityRoot,ghostGroup,ghostLine,selLine;
 let ready=false,raf=0,dirty=true,lastT=0;
-const target=new THREE.Vector3(-.5,0,-.5);
-let radius=40,azimuth=Math.PI/4,polar=.95,centerGoal=null;
-const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),.5),tmp=new THREE.Vector3(),box3=new THREE.Box3();
-const state=STORE.read();
+const target=new THREE.Vector3(0,0,0);
+let radius=34,azimuth=Math.PI/4,polar=.95,centerGoal=null,yGoal=0;
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),tmp=new THREE.Vector3(),box3=new THREE.Box3();
+const planeL=new THREE.Plane(new THREE.Vector3(0,1,0),.5);       // plano do nível de construção: y = L - 0.5
+const state={defs:{},items:[]};
 const geoCache=new Map(),matCache=new Map(),ghostMats=new Map(),inst=new Map();
-let placing=null,selected=null,query='';
+const chunks=new Map(),colTop=new Map(),dirtyChunks=new Set();
+let cityId=null,cityName='',blockCount=0,dirtySave=false,saveTimer=0,lastWarn=0;
+let tool='view',mat=0,panel=null,L=0;                            // ferramenta: view | build | erase
+let placing=null,selected=null,query='',busy=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const HINTS={view:'Arraste: girar · pinça: zoom · toque numa construção para selecioná-la',
+ build:'Toque: colocar bloco · segure: remover · arraste: girar · ▲▼ muda o nível',
+ erase:'Toque num bloco para removê-lo · arraste: girar',
+ place:'Arraste a prévia ou toque no mapa para escolher o local · ▲▼ ajusta a altura'};
 function say(t){const e=Q('#toast');if(!e)return;e.textContent=t;e.style.opacity=1;clearTimeout(say.t);say.t=setTimeout(()=>e.style.opacity=0,1700)}
 function newId(){return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function hash(b){const s=JSON.stringify(b);let h1=0xdeadbeef,h2=0x41c6ce57;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}
@@ -836,7 +1025,7 @@ function hash(b){const s=JSON.stringify(b);let h1=0xdeadbeef,h2=0x41c6ce57;for(l
 const validBlock=b=>Array.isArray(b)&&b.length>=4&&[b[0],b[1],b[2],b[3]].every(Number.isFinite)&&(b[3]|0)>=0&&(b[3]|0)<NTYPES;
 const cleanBlocks=a=>(Array.isArray(a)?a:[]).filter(validBlock).map(b=>[b[0]|0,b[1]|0,b[2]|0,b[3]|0]);
 
-/* ---------- geometria: um único mesh por construção, só com as faces visíveis ---------- */
+/* ---------- malha: só faces visíveis, um mesh por grupo de blocos ---------- */
 const FACES=[
  {n:[1,0,0],k:'side',c:[[.5,-.5,.5],[.5,-.5,-.5],[.5,.5,-.5],[.5,.5,.5]]},
  {n:[-1,0,0],k:'side',c:[[-.5,-.5,-.5],[-.5,-.5,.5],[-.5,.5,.5],[-.5,.5,-.5]]},
@@ -846,24 +1035,20 @@ const FACES=[
  {n:[0,0,-1],k:'side',c:[[.5,-.5,-.5],[-.5,-.5,-.5],[-.5,.5,-.5],[.5,.5,-.5]]}
 ];
 const UVS=[[0,0],[1,0],[1,1],[0,1]];
-function buildGeo(blocos){
- const cells=new Map();let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9,z0=1e9,z1=-1e9;
- for(const b of blocos){const x=b[0],y=b[1],z=b[2];cells.set(x+','+y+','+z,{x,y,z,t:b[3]});
-  if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;if(z<z0)z0=z;if(z>z1)z1=z}
- if(!cells.size)return null;
- const px=Math.floor((x0+x1)/2),pz=Math.floor((z0+z1)/2),slots=new Map();
- cells.forEach(c=>{
+function buildMesh(cells,lookup,ox,oy,oz){
+ const slots=new Map();
+ for(const c of cells){
   const T=TX.get(c.t),uni=T.top===T.side&&T.bottom===T.side;
   for(const f of FACES){
-   const nb=cells.get((c.x+f.n[0])+','+(c.y+f.n[1])+','+(c.z+f.n[2]));
-   if(nb&&!(nb.t===GLASS&&c.t!==GLASS))continue;           // face encostada em outro bloco: não aparece
+   const nb=lookup(c.x+f.n[0],c.y+f.n[1],c.z+f.n[2]);
+   if(nb!==undefined&&!(nb===GLASS&&c.t!==GLASS))continue;      // face encostada em outro bloco: não aparece
    const kind=uni?'s':f.k,name=c.t+':'+kind;let s=slots.get(name);
    if(!s){s={type:c.t,kind,pos:[],nor:[],uv:[],idx:[],n:0};slots.set(name,s)}
-   for(let j=0;j<4;j++){s.pos.push(c.x-px+f.c[j][0],c.y-y0+f.c[j][1],c.z-pz+f.c[j][2]);s.nor.push(f.n[0],f.n[1],f.n[2]);s.uv.push(UVS[j][0],UVS[j][1])}
+   for(let j=0;j<4;j++){s.pos.push(c.x-ox+f.c[j][0],c.y-oy+f.c[j][1],c.z-oz+f.c[j][2]);s.nor.push(f.n[0],f.n[1],f.n[2]);s.uv.push(UVS[j][0],UVS[j][1])}
    const b=s.n;s.idx.push(b,b+1,b+2,b,b+2,b+3);s.n+=4;
   }
- });
- let nv=0,ni=0;slots.forEach(s=>{nv+=s.n;ni+=s.idx.length});
+ }
+ let nv=0,ni=0;slots.forEach(s=>{nv+=s.n;ni+=s.idx.length});if(!nv)return null;
  const pos=new Float32Array(nv*3),nor=new Float32Array(nv*3),uv=new Float32Array(nv*2),idx=nv>65535?new Uint32Array(ni):new Uint16Array(ni);
  const geo=new THREE.BufferGeometry(),list=[];let vo=0,io=0,gi=0;
  slots.forEach(s=>{
@@ -873,45 +1058,101 @@ function buildGeo(blocos){
  });
  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('normal',new THREE.BufferAttribute(nor,3));geo.setAttribute('uv',new THREE.BufferAttribute(uv,2));
  geo.setIndex(new THREE.BufferAttribute(idx,1));
- return {geo,slots:list,tris:ni/3,bbox:{x0:x0-px,x1:x1-px,z0:z0-pz,z1:z1-pz,h:y1-y0}};
+ return {geo,slots:list,tris:ni/3};
 }
-function texFor(c,rx,ry){const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;t.colorSpace=THREE.SRGBColorSpace;
- if(rx){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry)}return t}
+function buildGeo(blocos){                                         // construção da biblioteca (miniatura)
+ const cells=new Map();let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9,z0=1e9,z1=-1e9;
+ for(const b of blocos){const x=b[0],y=b[1],z=b[2];cells.set(x+','+y+','+z,{x,y,z,t:b[3]});
+  if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;if(z<z0)z0=z;if(z>z1)z1=z}
+ if(!cells.size)return null;
+ const px=Math.floor((x0+x1)/2),pz=Math.floor((z0+z1)/2);
+ const m=buildMesh([...cells.values()],(x,y,z)=>{const c=cells.get(x+','+y+','+z);return c?c.t:undefined},px,y0,pz);
+ if(!m)return null;m.bbox={x0:x0-px,x1:x1-px,z0:z0-pz,z1:z1-pz,h:y1-y0};m.px=px;m.pz=pz;m.y0=y0;return m;
+}
+function texFor(c){const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;t.colorSpace=THREE.SRGBColorSpace;return t}
 function slotMat(s){const k=s.type+':'+s.kind;let m=matCache.get(k);
  if(!m){const T=TX.get(s.type);m=new THREE.MeshLambertMaterial({map:texFor(s.kind==='s'?T.side:T[s.kind]),transparent:s.type===GLASS});matCache.set(k,m)}return m}
 function ghostMat(m){let g=ghostMats.get(m);if(!g){g=m.clone();g.transparent=true;g.opacity=.55;g.depthWrite=false;ghostMats.set(m,g)}return g}
 function makeGroup(def,ghost){const g=new THREE.Group(),m=new THREE.Mesh(def.geo,def.slots.map(s=>ghost?ghostMat(slotMat(s)):slotMat(s)));
  if(!ghost){m.castShadow=true;m.receiveShadow=true}g.add(m);return g}
 function getDef(key){let d=geoCache.get(key);if(!d&&state.defs[key]){d=buildGeo(cleanBlocks(state.defs[key].blocos));if(d)geoCache.set(key,d)}return d||null}
-function prune(){geoCache.forEach((d,k)=>{if(!state.defs[k]&&!(placing&&placing.key===k)){d.geo.dispose();geoCache.delete(k)}})}
+function prune(all){geoCache.forEach((d,k)=>{if(all||(!state.defs[k]&&!(placing&&placing.key===k))){d.geo.dispose();geoCache.delete(k)}})}
 
-/* ---------- geometria 2D: pegada da construção (girada em passos de 90°) ---------- */
+/* ---------- terreno em blocos (chunks 16³) ---------- */
+const kOf=(x,y,z)=>(x-WMIN)+(z-WMIN)*128+(y-YMIN)*16384;
+const inB=(x,y,z)=>x>=WMIN&&x<=WMAX&&z>=WMIN&&z<=WMAX&&y>=YMIN&&y<=YMAX;
+const ckOf=(x,y,z)=>(Math.floor(x/CH)+4)+(Math.floor(z/CH)+4)*8+(Math.floor(y/CH)+1)*64;
+const colOf=(x,z)=>(x-WMIN)+(z-WMIN)*128;
+function decodeKey(k){return {x:(k%128)+WMIN,z:(Math.floor(k/128)%128)+WMIN,y:Math.floor(k/16384)+YMIN}}
+function getBlock(x,y,z){if(!inB(x,y,z))return undefined;const c=chunks.get(ckOf(x,y,z));return c?c.map.get(kOf(x,y,z)):undefined}
+function markChunk(x,y,z){if(!inB(x,y,z))return;const ck=ckOf(x,y,z);if(chunks.has(ck))dirtyChunks.add(ck)}
+function dirtyAround(x,y,z){
+ markChunk(x,y,z);const m=v=>((v%CH)+CH)%CH;
+ if(m(x)===0)markChunk(x-1,y,z);if(m(x)===CH-1)markChunk(x+1,y,z);
+ if(m(z)===0)markChunk(x,y,z-1);if(m(z)===CH-1)markChunk(x,y,z+1);
+ if(m(y)===0)markChunk(x,y-1,z);if(m(y)===CH-1)markChunk(x,y+1,z);
+}
+function setBlock(x,y,z,t){
+ if(!inB(x,y,z))return false;const ck=ckOf(x,y,z);let c=chunks.get(ck);
+ if(!c){c={map:new Map(),mesh:null,tris:0};chunks.set(ck,c)}
+ const k=kOf(x,y,z),old=c.map.get(k);if(old===t)return false;
+ c.map.set(k,t);
+ if(old===undefined){blockCount++;const col=colOf(x,z),top=colTop.get(col);if(top===undefined||y>top)colTop.set(col,y)}
+ dirtyAround(x,y,z);return true;
+}
+function removeBlockAt(x,y,z){
+ if(!inB(x,y,z))return false;const c=chunks.get(ckOf(x,y,z));if(!c)return false;const k=kOf(x,y,z);if(!c.map.has(k))return false;
+ c.map.delete(k);blockCount--;
+ const col=colOf(x,z);if(colTop.get(col)===y){let ny=y-1;while(ny>=YMIN&&getBlock(x,ny,z)===undefined)ny--;if(ny>=YMIN)colTop.set(col,ny);else colTop.delete(col)}
+ dirtyChunks.add(ckOf(x,y,z));dirtyAround(x,y,z);return true;
+}
+function buildChunk(ck,c){
+ if(c.mesh){terrainRoot.remove(c.mesh);c.mesh.geometry.dispose();c.mesh=null;c.tris=0}
+ if(!c.map.size){chunks.delete(ck);return}
+ const cells=[];c.map.forEach((t,k)=>{const p=decodeKey(k);cells.push({x:p.x,y:p.y,z:p.z,t})});
+ const ox=((ck%8)-4)*CH,oz=((Math.floor(ck/8)%8)-4)*CH,oy=(Math.floor(ck/64)-1)*CH;
+ const m=buildMesh(cells,getBlock,ox,oy,oz);if(!m)return;
+ const mesh=new THREE.Mesh(m.geo,m.slots.map(slotMat));mesh.position.set(ox,oy,oz);mesh.castShadow=true;mesh.receiveShadow=true;
+ terrainRoot.add(mesh);c.mesh=mesh;c.tris=m.tris;
+}
+function rebuildDirty(){if(!dirtyChunks.size)return;const list=[...dirtyChunks];dirtyChunks.clear();list.forEach(ck=>{const c=chunks.get(ck);if(c)buildChunk(ck,c)});dirty=true}
+function snapshotBlocks(){const out=[];chunks.forEach(c=>c.map.forEach((t,k)=>{const p=decodeKey(k);out.push([p.x,p.y,p.z,t])}));return out}
+function terrainTris(){let n=0;chunks.forEach(c=>n+=c.tris||0);return n}
+
+/* ---------- geometria 2D das miniaturas (pegada girada de 90° em 90°) ---------- */
 function rot90(x,z,r){switch(r&3){case 0:return[x,z];case 1:return[z,-x];case 2:return[-x,-z];default:return[-z,x]}}
 function localRect(b,r){const p=[[b.x0-.5,b.z0-.5],[b.x1+.5,b.z0-.5],[b.x0-.5,b.z1+.5],[b.x1+.5,b.z1+.5]].map(q=>rot90(q[0],q[1],r));
  return {x0:Math.min(...p.map(q=>q[0])),x1:Math.max(...p.map(q=>q[0])),z0:Math.min(...p.map(q=>q[1])),z1:Math.max(...p.map(q=>q[1]))}}
-function worldRect(def,r,x,z){const l=localRect(def.bbox,r);return {x0:x+l.x0,x1:x+l.x1,z0:z+l.z0,z1:z+l.z1,h:def.bbox.h}}
+function worldRect(def,r,x,y,z){const l=localRect(def.bbox,r);return {x0:x+l.x0,x1:x+l.x1,z0:z+l.z0,z1:z+l.z1,y0:y-.5,y1:y+def.bbox.h+.5}}
 function clampAxis(p,a0,a1){const lo=Math.ceil(EMIN-a0-1e-9),hi=Math.floor(EMAX-a1+1e-9);return lo>hi?Math.round((lo+hi)/2):clamp(p,lo,hi)}
 function clampPivot(def,r,x,z){const l=localRect(def.bbox,r);return {x:clampAxis(x,l.x0,l.x1),z:clampAxis(z,l.z0,l.z1)}}
-const overlap=(a,b)=>a.x0<b.x1-1e-6&&a.x1>b.x0+1e-6&&a.z0<b.z1-1e-6&&a.z1>b.z0+1e-6;
+const overlap=(a,b)=>a.x0<b.x1-1e-6&&a.x1>b.x0+1e-6&&a.z0<b.z1-1e-6&&a.z1>b.z0+1e-6&&a.y0<b.y1-1e-6&&a.y1>b.y0+1e-6;
+function baseY(def,r,x,z){                                          // a miniatura "senta" sobre o ponto mais alto do terreno sob a pegada
+ const l=localRect(def.bbox,r);let best=null;
+ for(let ix=Math.ceil(x+l.x0);ix<=Math.floor(x+l.x1);ix++)for(let iz=Math.ceil(z+l.z0);iz<=Math.floor(z+l.z1);iz++){
+  const t=colTop.get(colOf(ix,iz));if(t!==undefined&&(best===null||t+1>best))best=t+1}
+ return best===null?L:best;
+}
 
 /* ---------- cena ---------- */
 function init(){
- scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd8ff);scene.fog=new THREE.Fog(0x9bd8ff,75,180);
- camera=new THREE.PerspectiveCamera(48,1,.1,300);
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x9bd8ff);scene.fog=new THREE.Fog(0x9bd8ff,110,320);
+ camera=new THREE.PerspectiveCamera(48,1,.1,600);
  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
- renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
+ renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  host.appendChild(renderer.domElement);
  scene.add(new THREE.HemisphereLight(0xffffff,0x718090,2));
- sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(18,40,24);sun.target.position.set(-.5,0,-.5);scene.add(sun.target);scene.add(sun);
- sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-36,right:36,top:36,bottom:-36,near:1,far:120});sun.shadow.bias=-.0006;
- // chão: bloco gigante de grama + terra + pedra, com as mesmas texturas 16×16 repetidas célula a célula
- const g0=TX.get(0),dirt=TX.get(1),stone=TX.get(2);
- const mat=(c,rx,ry)=>new THREE.MeshLambertMaterial({map:texFor(c,rx,ry)});
- const layer=(y,m)=>{const mesh=new THREE.Mesh(new THREE.BoxGeometry(MAP,1,MAP),m);mesh.position.set(-.5,y,-.5);mesh.receiveShadow=true;scene.add(mesh)};
- layer(-1,[mat(g0.side,MAP,1),mat(g0.side,MAP,1),mat(g0.top,MAP,MAP),mat(dirt.bottom,MAP,MAP),mat(g0.side,MAP,1),mat(g0.side,MAP,1)]);
- layer(-2,mat(dirt.side,MAP,1));layer(-3,mat(stone.side,MAP,1));
- gridH=new THREE.GridHelper(MAP,MAP,0x3f6b2e,0x3f6b2e);gridH.position.set(-.5,-.49,-.5);gridH.material.transparent=true;gridH.material.opacity=.28;scene.add(gridH);
+ sun=new THREE.DirectionalLight(0xffffff,2.2);scene.add(sun.target);scene.add(sun);
+ sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-36,right:36,top:36,bottom:-36,near:1,far:140});sun.shadow.bias=-.0006;
+ terrainRoot=new THREE.Group();scene.add(terrainRoot);
  cityRoot=new THREE.Group();scene.add(cityRoot);
+ // referência de posicionamento (não cria blocos): grade que acompanha a câmera, moldura do mundo e marca da origem, no nível de construção
+ gridH=new THREE.GridHelper(48,48,0x2f5a8a,0x2f5a8a);gridH.material.transparent=true;gridH.material.opacity=.35;scene.add(gridH);
+ refGroup=new THREE.Group();scene.add(refGroup);
+ const seg=(pts,color,op)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pts),3));
+  const m=new THREE.LineBasicMaterial({color});m.transparent=true;m.opacity=op;return new THREE.LineSegments(g,m)};
+ refGroup.add(seg([EMIN,0,EMIN,EMAX,0,EMIN, EMAX,0,EMIN,EMAX,0,EMAX, EMAX,0,EMAX,EMIN,0,EMAX, EMIN,0,EMAX,EMIN,0,EMIN],0xe9b84a,.8));
+ refGroup.add(seg([-2,0,0,2,0,0],0xe05a4e,.9));refGroup.add(seg([0,0,-2,0,0,2],0x4e8fe0,.9));
  ghostGroup=new THREE.Group();ghostGroup.visible=false;scene.add(ghostGroup);
  const lineMat=c=>{const m=new THREE.LineBasicMaterial({color:c});m.depthTest=false;return m};
  ghostLine=new THREE.LineSegments(new THREE.BufferGeometry(),lineMat(0x62ff62));ghostLine.visible=false;ghostLine.renderOrder=10;scene.add(ghostLine);
@@ -920,92 +1161,178 @@ function init(){
  bindPointer(renderer.domElement);
  if(window.ResizeObserver)new ResizeObserver(()=>{if(ready)resize()}).observe(mapEl);
  addEventListener('resize',()=>{if(ready)resize()});
- state.items.forEach(it=>{if(!addInstance(it))console.warn('Construção ignorada (dados inválidos):',it.id)});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&MD.current==='cidade')flush(true)});
+ addEventListener('pagehide',()=>{if(MD.current==='cidade')flush(true)});
 }
 function resize(){const w=mapEl.clientWidth,h=mapEl.clientHeight;if(!renderer||!w||!h)return;
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,MD.cfg.eco?1:2));renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();dirty=true}
-function applyConfig(c){if(!ready)return;sun.castShadow=!!c.shadows;gridH.visible=!!c.grid;Q('#cityHint').hidden=!c.hints;renderer.shadowMap.needsUpdate=true;resize();dirty=true}
-function updateCamera(){const sp=Math.sin(polar);camera.position.set(target.x+radius*sp*Math.cos(azimuth),target.y+radius*Math.cos(polar),target.z+radius*sp*Math.sin(azimuth));camera.lookAt(target);camera.updateMatrixWorld()}
+function applyConfig(c){if(!ready)return;sun.castShadow=!!c.shadows;gridH.visible=!!c.grid;refGroup.visible=!!c.grid;Q('#cityHint').hidden=!c.hints;resize();dirty=true}
+function updateCamera(){
+ const sp=Math.sin(polar);camera.position.set(target.x+radius*sp*Math.cos(azimuth),target.y+radius*Math.cos(polar),target.z+radius*sp*Math.sin(azimuth));camera.lookAt(target);camera.updateMatrixWorld();
+ sun.position.set(target.x+18,target.y+40,target.z+24);sun.target.position.copy(target);
+ gridH.position.set(Math.round(target.x)-.5,L-.5+.01,Math.round(target.z)-.5);refGroup.position.y=L-.5+.02;
+}
 
-/* ---------- instâncias ---------- */
+/* ---------- cidade: carregar / limpar / salvar ---------- */
+function clearCity(){
+ chunks.forEach(c=>{if(c.mesh){terrainRoot.remove(c.mesh);c.mesh.geometry.dispose()}});chunks.clear();colTop.clear();dirtyChunks.clear();blockCount=0;
+ inst.forEach(v=>cityRoot.remove(v.group));inst.clear();state.defs={};state.items=[];
+ placing=null;selected=null;if(ghostGroup){ghostGroup.clear();ghostGroup.visible=false;ghostLine.visible=false;selLine.visible=false}
+ prune(true);clearTimeout(saveTimer);saveTimer=0;dirtySave=false;
+}
+function loadCity(id){
+ clearCity();cityId=id;const d=STORE.load(id);
+ if(!d){say('Não foi possível ler esta cidade');return false}
+ cityName=d.nome;state.defs=d.defs;state.items=d.items;
+ d.blocks.forEach(b=>setBlock(b[0],b[1],b[2],b[3]));rebuildDirty();
+ state.items.forEach(it=>{if(!addInstance(it))console.warn('Construção ignorada (dados inválidos):',it.id)});
+ L=0;yGoal=0;target.set(0,0,0);dirty=true;return true;
+}
+function makePreview(){
+ const vox=snapshotBlocks();
+ for(const it of state.items){const d=state.defs[it.def];if(!d)continue;const bl=cleanBlocks(d.blocos);if(!bl.length)continue;
+  let x0=1e9,x1=-1e9,y0=1e9,z0=1e9,z1=-1e9;for(const b of bl){x0=Math.min(x0,b[0]);x1=Math.max(x1,b[0]);y0=Math.min(y0,b[1]);z0=Math.min(z0,b[2]);z1=Math.max(z1,b[2])}
+  const px=Math.floor((x0+x1)/2),pz=Math.floor((z0+z1)/2);
+  for(const b of bl){const r=rot90(b[0]-px,b[2]-pz,it.rot);vox.push([it.x+r[0],it.y+b[1]-y0,it.z+r[1],b[3]])}}
+ if(!vox.length)return '';
+ let list=vox;
+ if(list.length>6000){const top=new Map();for(const v of list){const k=v[0]+','+v[2],a=top.get(k)||[];a.push(v);top.set(k,a)}
+  list=[];top.forEach(a=>{a.sort((p,q)=>q[1]-p[1]);list.push(a[0]);if(a[1])list.push(a[1])})}
+ return MD.cityPreview?MD.cityPreview(list):'';
+}
+function saveNow(preview){
+ if(!cityId)return true;
+ const meta={nb:blockCount,ni:state.items.length};if(preview){const p=makePreview();if(p)meta.preview=p}
+ const ok=STORE.save(cityId,{blocks:snapshotBlocks(),defs:state.defs,items:state.items},meta);
+ if(ok)dirtySave=false;
+ else if(Date.now()-lastWarn>3000){lastWarn=Date.now();say('Não foi possível salvar a cidade: memória do aparelho cheia')}
+ return ok;
+}
+function flush(preview){clearTimeout(saveTimer);saveTimer=0;if(!cityId||!ready)return true;if(!dirtySave&&!preview)return true;return saveNow(preview)}
+function markSave(){dirtySave=true;if(!saveTimer)saveTimer=setTimeout(()=>{saveTimer=0;if(cityId)saveNow(false)},700);updateInfoText()}
+function forget(id){if(cityId===id){clearCity();cityId=null;cityName=''}}
+
+/* ---------- miniaturas colocadas ---------- */
 function addInstance(it){const d=getDef(it.def);if(!d)return false;
- const g=makeGroup(d,false);g.position.set(it.x,0,it.z);g.rotation.y=(it.rot&3)*Math.PI/2;cityRoot.add(g);
- inst.set(it.id,{item:it,group:g,def:d,rect:worldRect(d,it.rot,it.x,it.z)});return true}
-function persist(){return STORE.write(state)}
+ const g=makeGroup(d,false);g.position.set(it.x,it.y,it.z);g.rotation.y=(it.rot&3)*Math.PI/2;cityRoot.add(g);
+ inst.set(it.id,{item:it,group:g,def:d,rect:worldRect(d,it.rot,it.x,it.y,it.z)});return true}
 function updateCount(){const n=inst.size;Q('#cityCount').textContent=n+(n===1?' construção':' construções')}
-function touchScene(){renderer.shadowMap.needsUpdate=true;dirty=true}
+function updateInfoText(){const e=Q('#blocksInfo');if(e)e.textContent=blockCount+(blockCount===1?' bloco':' blocos')+' no mapa'}
 
-/* ---------- ponteiros: arrastar = girar câmera · pinça = zoom · prévia = arrastar/tocar ---------- */
+/* ---------- raios: voxel (DDA) e plano do nível ---------- */
+function voxelRay(o,d,maxT){
+ maxT=maxT||500;const px=o.x+.5,py=o.y+.5,pz=o.z+.5;let x=Math.floor(px),y=Math.floor(py),z=Math.floor(pz);
+ const sx=Math.sign(d.x),sy=Math.sign(d.y),sz=Math.sign(d.z);
+ const dx=sx?Math.abs(1/d.x):Infinity,dy=sy?Math.abs(1/d.y):Infinity,dz=sz?Math.abs(1/d.z):Infinity;
+ let tx=sx>0?(x+1-px)*dx:sx<0?(px-x)*dx:Infinity,ty=sy>0?(y+1-py)*dy:sy<0?(py-y)*dy:Infinity,tz=sz>0?(z+1-pz)*dz:sz<0?(pz-z)*dz:Infinity;
+ let t=0,nx=0,ny=0,nz=0;
+ for(let i=0;i<1500;i++){
+  if(tx<=ty&&tx<=tz){x+=sx;t=tx;tx+=dx;nx=-sx;ny=0;nz=0}
+  else if(ty<=tz){y+=sy;t=ty;ty+=dy;nx=0;ny=-sy;nz=0}
+  else{z+=sz;t=tz;tz+=dz;nx=0;ny=0;nz=-sz}
+  if(t>maxT)return null;
+  if(inB(x,y,z)&&getBlock(x,y,z)!==undefined)return {x,y,z,nx,ny,nz,t};
+ }
+ return null;
+}
 function ndcOf(e){const r=renderer.domElement.getBoundingClientRect();ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera)}
-function groundAt(e){ndcOf(e);const p=ray.ray.intersectPlane(plane,tmp);return p?{x:p.x,z:p.z}:null}
-function hitRect(r,e){ndcOf(e);box3.min.set(r.x0,-.5,r.z0);box3.max.set(r.x1,r.h+.5,r.z1);const p=ray.ray.intersectBox(box3,tmp);return p?p.distanceTo(ray.ray.origin):null}
+function setPlane(){planeL.constant=.5-L}
+function rayCell(e){                                                // coluna (x,z) sob o dedo: topo do terreno visto, ou o plano do nível
+ ndcOf(e);const o=ray.ray.origin,d=ray.ray.direction,h=voxelRay(o,d),pt=ray.ray.intersectPlane(planeL,tmp),tp=pt?pt.distanceTo(o):Infinity;
+ if(h&&h.t<=tp)return {x:h.x,z:h.z};if(pt)return {x:tmp.x,z:tmp.z};return null}
+function hitRect(r,e){ndcOf(e);box3.min.set(r.x0,r.y0,r.z0);box3.max.set(r.x1,r.y1,r.z1);const p=ray.ray.intersectBox(box3,tmp);return p?p.distanceTo(ray.ray.origin):null}
 function pickInstance(e){let best=null,bd=1e12;inst.forEach((v,id)=>{const d=hitRect(v.rect,e);if(d!==null&&d<bd){bd=d;best=id}});return best}
+
+/* ---------- construir e remover blocos ---------- */
+function placeBlockAt(e){
+ ndcOf(e);const o=ray.ray.origin,d=ray.ray.direction,h=voxelRay(o,d),pt=ray.ray.intersectPlane(planeL,tmp),tp=pt?pt.distanceTo(o):Infinity;
+ let cx,cy,cz;
+ if(h&&h.t<=tp){cx=h.x+h.nx;cy=h.y+h.ny;cz=h.z+h.nz}                // encosta na face tocada (em cima, ao lado...)
+ else if(pt){cx=Math.round(tmp.x);cy=L;cz=Math.round(tmp.z)}        // ou no nível de construção
+ else return;
+ if(!inB(cx,cy,cz)){say('Fora dos limites do mundo');return}
+ if(getBlock(cx,cy,cz)!==undefined)return;
+ if(setBlock(cx,cy,cz,mat)){markSave();dirty=true}
+}
+function eraseBlockAt(e){
+ ndcOf(e);const h=voxelRay(ray.ray.origin,ray.ray.direction);if(!h)return false;
+ if(removeBlockAt(h.x,h.y,h.z)){markSave();dirty=true;return true}return false;
+}
+
+/* ---------- ponteiros: arrastar = girar câmera · pinça = zoom · toque/segurar = ferramenta ---------- */
 function bindPointer(dom){
  const ptrs=new Map();let down=null,pinch=0;
  const dist=()=>{const a=[...ptrs.values()];return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1};
+ const stopLP=()=>{if(down&&down.lp){clearTimeout(down.lp);down.lp=0}};
  dom.addEventListener('pointerdown',e=>{
   try{dom.setPointerCapture(e.pointerId)}catch(_){}
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});centerGoal=null;
-  if(ptrs.size===2){down=null;pinch=dist();return}
+  if(ptrs.size===2){stopLP();down=null;pinch=dist();return}
   if(ptrs.size>2)return;
-  down={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,ghost:false,ox:0,oz:0};
-  if(placing){const r=worldRect(placing.def,placing.rot,placing.x,placing.z),d=hitRect(r,e);
-   if(d!==null){const g=groundAt(e);down.ghost=true;if(g){down.ox=placing.x-g.x;down.oz=placing.z-g.z}}}
+  down={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,ghost:false,ox:0,oz:0,lp:0,done:false};
+  if(placing){const r=worldRect(placing.def,placing.rot,placing.x,placing.y,placing.z),d=hitRect(r,e);
+   if(d!==null){const g=rayCell(e);down.ghost=true;if(g){down.ox=placing.x-g.x;down.oz=placing.z-g.z}}}
+  else if(tool==='build'){const ev={clientX:e.clientX,clientY:e.clientY};
+   down.lp=setTimeout(()=>{if(down&&!down.moved&&!down.done){down.done=true;down.lp=0;if(eraseBlockAt(ev)&&navigator.vibrate){try{navigator.vibrate(12)}catch(_){}}}},450)}
  });
  dom.addEventListener('pointermove',e=>{
   const p=ptrs.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
-  if(ptrs.size===2){const d=dist();radius=clamp(radius*(pinch/d),7,75);pinch=d;dirty=true;return}
+  if(ptrs.size===2){const d=dist();radius=clamp(radius*(pinch/d),6,110);pinch=d;dirty=true;return}
   if(!down||down.id!==e.pointerId)return;
-  if(!down.moved&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>8)down.moved=true;
+  if(!down.moved&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>8){down.moved=true;stopLP()}
   if(!down.moved)return;
-  if(down.ghost&&placing){const g=groundAt(e);if(g){placing.x=Math.round(g.x+down.ox);placing.z=Math.round(g.z+down.oz);updateGhost()}}
+  if(down.ghost&&placing){const g=rayCell(e);if(g){placing.x=Math.round(g.x+down.ox);placing.z=Math.round(g.z+down.oz);updateGhost()}}
   else{azimuth-=dx*.008;polar=clamp(polar-dy*.006,.15,1.45);dirty=true}
  });
  const end=e=>{
   const was=ptrs.size;ptrs.delete(e.pointerId);
   if(was===2){down=null;pinch=0;return}
-  if(down&&down.id===e.pointerId){const d=down;down=null;if(!d.moved&&e.type==='pointerup')tap(e)}
+  if(down&&down.id===e.pointerId){const d=down;stopLP();down=null;if(!d.moved&&!d.done&&e.type==='pointerup')tap(e)}
  };
  dom.addEventListener('pointerup',end);dom.addEventListener('pointercancel',end);
- dom.addEventListener('wheel',e=>{e.preventDefault();radius=clamp(radius*(e.deltaY>0?1.1:.9),7,75);dirty=true},{passive:false});
+ dom.addEventListener('wheel',e=>{e.preventDefault();radius=clamp(radius*(e.deltaY>0?1.1:.9),6,110);dirty=true},{passive:false});
 }
 function tap(e){
- if(placing){const g=groundAt(e);if(g){placing.x=Math.round(g.x);placing.z=Math.round(g.z);updateGhost()}return}
+ if(placing){const g=rayCell(e);if(g){placing.x=Math.round(g.x);placing.z=Math.round(g.z);updateGhost()}return}
+ if(tool==='build'){placeBlockAt(e);return}
+ if(tool==='erase'){eraseBlockAt(e);return}
  const id=pickInstance(e);if(id)select(id);else clearSelection();
 }
 
-/* ---------- prévia e posicionamento ---------- */
+/* ---------- prévia e posicionamento de miniaturas ---------- */
 function setOutline(line,r,color){
- line.geometry.dispose();const bg=new THREE.BoxGeometry(r.x1-r.x0+.06,r.h+1.06,r.z1-r.z0+.06);line.geometry=new THREE.EdgesGeometry(bg);bg.dispose();
- line.position.set((r.x0+r.x1)/2,r.h/2,(r.z0+r.z1)/2);line.material.color.setHex(color);line.visible=true}
+ line.geometry.dispose();const bg=new THREE.BoxGeometry(r.x1-r.x0+.06,r.y1-r.y0+.06,r.z1-r.z0+.06);line.geometry=new THREE.EdgesGeometry(bg);bg.dispose();
+ line.position.set((r.x0+r.x1)/2,(r.y0+r.y1)/2,(r.z0+r.z1)/2);line.material.color.setHex(color);line.visible=true}
 function updateGhost(){
  if(!placing){ghostGroup.visible=false;ghostLine.visible=false;dirty=true;return}
  const p=placing,c=clampPivot(p.def,p.rot,p.x,p.z);p.x=c.x;p.z=c.z;
- ghostGroup.position.set(p.x,0,p.z);ghostGroup.rotation.y=(p.rot&3)*Math.PI/2;ghostGroup.visible=true;
- const r=worldRect(p.def,p.rot,p.x,p.z);let over=false;inst.forEach(v=>{if(overlap(r,v.rect))over=true});
- p.over=over;setOutline(ghostLine,r,over?0xffa23a:0x62ff62);dirty=true;
+ p.y=clamp(baseY(p.def,p.rot,p.x,p.z)+p.dy,YMIN,YMAX);
+ ghostGroup.position.set(p.x,p.y,p.z);ghostGroup.rotation.y=(p.rot&3)*Math.PI/2;ghostGroup.visible=true;
+ const r=worldRect(p.def,p.rot,p.x,p.y,p.z);let over=false;inst.forEach(v=>{if(overlap(r,v.rect))over=true});
+ const was=p.over;p.over=over;setOutline(ghostLine,r,over?0xffa23a:0x62ff62);dirty=true;
+ if(was!==over||barEl.dataset.base!==String(p.y))showBar();updateLevelUI();
 }
 function startPlacing(it){
  const blocos=cleanBlocks(it.blocos);if(!blocos.length){say('Esta construção está vazia');return}
  const key=hash(blocos);let def=geoCache.get(key);if(!def){def=buildGeo(blocos);if(!def){say('Não foi possível montar esta construção');return}geoCache.set(key,def)}
  clearSelection();ghostGroup.clear();ghostGroup.add(makeGroup(def,true).children[0]);
- placing={libId:it.id,nome:it.nome||'Construção',blocos,key,def,x:Math.round(target.x),z:Math.round(target.z),rot:0,over:false};
- updateGhost();Q('#nudgePad').hidden=false;showBar();renderLib();prune();
+ placing={libId:it.id,nome:it.nome||'Construção',blocos,key,def,x:Math.round(target.x),y:0,z:Math.round(target.z),dy:0,rot:0,over:false};
+ closePanels();updateGhost();Q('#nudgePad').hidden=false;showBar();updateTabs();updateHint();updateLevelUI();prune();
 }
 function cancelPlacing(){
- placing=null;ghostGroup.clear();updateGhost();Q('#nudgePad').hidden=true;showBar();renderLib();prune();
+ placing=null;ghostGroup.clear();updateGhost();Q('#nudgePad').hidden=true;showBar();updateTabs();updateHint();updateLevelUI();prune();
 }
 function askPlace(){
  if(!placing)return;
  MD.askConfirm('Posicionar construção','Deseja realmente colocar esta construção aqui?','CONFIRMAR',commit,{noLabel:'CANCELAR'});
 }
 function commit(){
- if(!placing)return;
- const p=placing,item={id:newId(),cid:p.libId,def:p.key,x:p.x,z:p.z,rot:p.rot&3},hadDef=!!state.defs[p.key];
+ if(!placing||!cityId)return;
+ const p=placing,item={id:newId(),cid:p.libId,def:p.key,x:p.x,y:p.y,z:p.z,rot:p.rot&3},hadDef=!!state.defs[p.key];
  if(!hadDef)state.defs[p.key]={nome:p.nome,blocos:p.blocos};
  state.items.push(item);
- if(!persist()){state.items.pop();if(!hadDef)delete state.defs[p.key];say('Memória do aparelho cheia: a cidade não pôde ser salva. A construção não foi colocada.');return}
- addInstance(item);updateCount();touchScene();cancelPlacing();say('Construção colocada em Minha Cidade');
+ if(!saveNow(false)){state.items.pop();if(!hadDef)delete state.defs[p.key];say('Memória do aparelho cheia: a cidade não pôde ser salva. A construção não foi colocada.');return}
+ addInstance(item);updateCount();dirty=true;cancelPlacing();say('Construção colocada na cidade');
 }
 function nudge(dir){
  if(!placing)return;
@@ -1018,7 +1345,7 @@ function rotate(){if(!placing)return;placing.rot=(placing.rot+1)&3;updateGhost()
 
 /* ---------- seleção e remoção de cópias ---------- */
 function select(id){const v=inst.get(id);if(!v)return;selected=id;setOutline(selLine,v.rect,0xffe14a);dirty=true;showBar()}
-function clearSelection(){selected=null;if(selLine){selLine.visible=false}dirty=true;showBar()}
+function clearSelection(){selected=null;if(selLine)selLine.visible=false;dirty=true;showBar()}
 function askRemove(){
  const v=selected&&inst.get(selected);if(!v)return;const id=selected;
  MD.askConfirm('Remover do mapa','Deseja realmente remover esta construção do mapa? Ela continua salva em Minhas Criações.','REMOVER',()=>doRemove(id),{noLabel:'CANCELAR',danger:true});
@@ -1027,28 +1354,63 @@ function doRemove(id){
  const v=inst.get(id),idx=state.items.findIndex(i=>i.id===id);if(!v||idx<0)return;
  const [it]=state.items.splice(idx,1),oldDef=state.defs[it.def];let gone=false;
  if(!state.items.some(i=>i.def===it.def)){delete state.defs[it.def];gone=true}
- if(!persist()){state.items.splice(idx,0,it);if(gone)state.defs[it.def]=oldDef;say('Não foi possível salvar a cidade. Nada foi removido.');return}
- cityRoot.remove(v.group);inst.delete(id);selected=null;selLine.visible=false;updateCount();prune();touchScene();showBar();say('Construção removida do mapa');
+ if(!saveNow(false)){state.items.splice(idx,0,it);if(gone)state.defs[it.def]=oldDef;say('Não foi possível salvar a cidade. Nada foi removido.');return}
+ cityRoot.remove(v.group);inst.delete(id);selected=null;selLine.visible=false;updateCount();prune();dirty=true;showBar();say('Construção removida do mapa');
 }
 
-/* ---------- barra de ações e biblioteca (parte de baixo) ---------- */
+/* ---------- interface: abas, painéis, nível, ferramentas ---------- */
 function btn(label,cls,fn){const b=document.createElement('button');b.className='cbtn '+(cls||'');b.textContent=label;b.onclick=fn;return b}
 function showBar(){
- barEl.innerHTML='';
- if(!placing&&!selected){barEl.hidden=true;Q('#cityHint').textContent=HINT_IDLE;return}
+ barEl.innerHTML='';barEl.dataset.base='';
+ if(!placing&&!selected){barEl.hidden=true;return}
  const info=document.createElement('div'),row=document.createElement('div');info.className='bar-info';row.className='bar-row';
  if(placing){
-  info.textContent=placing.nome+(placing.over?' · sobrepõe outra construção':'')+' · arraste a prévia ou toque no mapa';
+  barEl.dataset.base=String(placing.y);
+  info.textContent=placing.nome+(placing.over?' · sobrepõe outra construção':'')+' · base no nível '+placing.y;
   row.append(btn('⟳ GIRAR','',rotate),btn('POSICIONAR','ok big',askPlace),btn('CANCELAR','',cancelPlacing));
-  Q('#cityHint').textContent=HINT_PLACING;
  }else{
   const v=inst.get(selected);info.textContent=(state.defs[v.item.def]?state.defs[v.item.def].nome:'Construção')+' · selecionada';
   row.append(btn('REMOVER','bad big',askRemove),btn('FECHAR','',clearSelection));
  }
  barEl.append(info,row);barEl.hidden=false;
 }
-const HINT_IDLE='Arraste: girar · pinça: zoom · toque numa construção para selecioná-la';
-const HINT_PLACING='Arraste a prévia ou toque no mapa para escolher o local';
+function updateHint(){Q('#cityHint').textContent=placing?HINTS.place:HINTS[tool]}
+function updateLevelUI(){
+ const box=Q('#lvlBox'),show=!!placing||tool==='build';box.hidden=!show;
+ Q('#lvlTxt').textContent=placing?'Base '+placing.y:'Nível '+L;
+}
+function changeLevel(d){
+ if(placing){placing.dy+=d;updateGhost();yGoal=placing.y}
+ else{L=clamp(L+d,YMIN,YMAX);setPlane();yGoal=L;updateLevelUI()}
+ dirty=true;
+}
+const swatch=i=>TX.get(i).side.toDataURL();
+function updateTabs(){
+ const sub=Q('#tabBlocksSub'),sw=Q('#tabBlocksSw');
+ if(tool==='build'){sub.textContent=MAT_NAMES[mat];sw.style.backgroundImage='url('+swatch(mat)+')';sw.hidden=false}
+ else{sw.hidden=true;sub.textContent=tool==='erase'?'Remover bloco':'Escolher material'}
+ Q('#tabMinisSub').textContent=placing?placing.nome:'Suas construções';
+ Q('#tabBlocks').classList.toggle('on',panel==='blocks');Q('#tabMinis').classList.toggle('on',panel==='minis');
+ Q('#tabBlocks').setAttribute('aria-expanded',String(panel==='blocks'));Q('#tabMinis').setAttribute('aria-expanded',String(panel==='minis'));
+}
+function openPanel(name){
+ panel=panel===name?null:name;Q('#panelBlocks').hidden=panel!=='blocks';Q('#panelMinis').hidden=panel!=='minis';
+ if(panel==='minis')renderLib();if(panel==='blocks'){renderMats();updateInfoText()}updateTabs();
+}
+function closePanels(){panel=null;Q('#panelBlocks').hidden=true;Q('#panelMinis').hidden=true;updateTabs()}
+function setTool(t,m){
+ tool=t;if(m!==undefined)mat=m;if(placing)cancelPlacing();clearSelection();
+ closePanels();updateTabs();updateHint();updateLevelUI();renderMats();
+ if(t==='build')yGoal=L;dirty=true;
+}
+function renderMats(){
+ const strip=Q('#matStrip');strip.innerHTML='';
+ MAT_NAMES.forEach((n,i)=>{const b=document.createElement('button');b.className='mcard'+(tool==='build'&&mat===i?' sel':'');b.setAttribute('aria-pressed',String(tool==='build'&&mat===i));
+  const sw=document.createElement('i');sw.className='msw';sw.style.backgroundImage='url('+swatch(i)+')';const s=document.createElement('span');s.textContent=n;
+  b.append(sw,s);b.onclick=()=>setTool('build',i);strip.appendChild(b)});
+ Q('#toolView').classList.toggle('sel',tool==='view');Q('#toolErase').classList.toggle('sel',tool==='erase');
+ Q('#toolView').setAttribute('aria-pressed',String(tool==='view'));Q('#toolErase').setAttribute('aria-pressed',String(tool==='erase'));
+}
 function renderLib(){
  const strip=Q('#cityStrip');strip.innerHTML='';const all=LIB.list();
  const note=(t,act)=>{const d=document.createElement('div');d.className='lnote';const s=document.createElement('span');s.textContent=t;d.appendChild(s);
@@ -1059,10 +1421,16 @@ function renderLib(){
  list.forEach(it=>{
   const b=document.createElement('button'),on=placing&&placing.libId===it.id;b.className='lcard'+(on?' sel':'');b.setAttribute('aria-pressed',String(!!on));
   const img=new Image();img.alt='';img.src=LIB.thumbSrc(it);const nm=document.createElement('span');nm.textContent=it.nome||'Sem nome';
-  b.append(img,nm);b.onclick=()=>{if(placing&&placing.libId===it.id)cancelPlacing();else startPlacing(it)};strip.appendChild(b);
+  b.append(img,nm);b.onclick=()=>{if(placing&&placing.libId===it.id){cancelPlacing()}else startPlacing(it)};strip.appendChild(b);
  });
 }
 Q('#citySearch').addEventListener('input',e=>{query=e.target.value;renderLib()});
+Q('#tabBlocks').addEventListener('click',()=>openPanel('blocks'));
+Q('#tabMinis').addEventListener('click',()=>openPanel('minis'));
+Q('#closeBlocks').addEventListener('click',closePanels);Q('#closeMinis').addEventListener('click',closePanels);
+Q('#toolView').addEventListener('click',()=>setTool('view'));
+Q('#toolErase').addEventListener('click',()=>setTool('erase'));
+Q('#lvlUp').addEventListener('click',()=>changeLevel(1));Q('#lvlDown').addEventListener('click',()=>changeLevel(-1));
 
 /* ---------- botões do mapa: câmera (contínuo), zoom, mover prévia ---------- */
 const panPtr=new Map(),pan={up:0,down:0,left:0,right:0};
@@ -1072,9 +1440,9 @@ Q('#camPad').querySelectorAll('[data-dir]').forEach(b=>{
  const up=e=>{panPtr.delete(e.pointerId);refreshPan()};
  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>b.addEventListener(t,up));
 });
-Q('#cityCenter').addEventListener('click',()=>{centerGoal=placing?new THREE.Vector3(placing.x,0,placing.z):new THREE.Vector3(-.5,0,-.5)});
-Q('#cityZoomIn').addEventListener('click',()=>{radius=clamp(radius*.8,7,75);dirty=true});
-Q('#cityZoomOut').addEventListener('click',()=>{radius=clamp(radius*1.25,7,75);dirty=true});
+Q('#cityCenter').addEventListener('click',()=>{centerGoal={x:placing?placing.x:0,z:placing?placing.z:0};yGoal=placing?placing.y:L});
+Q('#cityZoomIn').addEventListener('click',()=>{radius=clamp(radius*.8,6,110);dirty=true});
+Q('#cityZoomOut').addEventListener('click',()=>{radius=clamp(radius*1.25,6,110);dirty=true});
 let rep1=0,rep2=0;const stopRep=()=>{clearTimeout(rep1);clearInterval(rep2);rep1=rep2=0};
 Q('#nudgePad').querySelectorAll('[data-nudge]').forEach(b=>{
  b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}stopRep();nudge(b.dataset.nudge);
@@ -1087,26 +1455,37 @@ function loop(now){
  raf=requestAnimationFrame(loop);const dt=Math.min(.05,(now-lastT)/1000||0);lastT=now;
  if(pan.up||pan.down||pan.left||pan.right){
   const fx=-Math.cos(azimuth),fz=-Math.sin(azimuth),rx=-fz,rz=fx,u=pan.up-pan.down,r=pan.right-pan.left,s=radius*.7*dt;
-  target.x=clamp(target.x+(fx*u+rx*r)*s,-26,25);target.z=clamp(target.z+(fz*u+rz*r)*s,-26,25);dirty=true;
+  target.x=clamp(target.x+(fx*u+rx*r)*s,WMIN-2,WMAX+2);target.z=clamp(target.z+(fz*u+rz*r)*s,WMIN-2,WMAX+2);dirty=true;
  }
- if(centerGoal){target.lerp(centerGoal,1-Math.pow(.0005,dt));if(target.distanceToSquared(centerGoal)<.0004){target.copy(centerGoal);centerGoal=null}dirty=true}
+ if(centerGoal){const k=1-Math.pow(.0005,dt);target.x+=(centerGoal.x-target.x)*k;target.z+=(centerGoal.z-target.z)*k;
+  if(Math.abs(centerGoal.x-target.x)+Math.abs(centerGoal.z-target.z)<.02){target.x=centerGoal.x;target.z=centerGoal.z;centerGoal=null}dirty=true}
+ if(Math.abs(target.y-yGoal)>.005){const k=1-Math.pow(.001,dt);target.y+=(yGoal-target.y)*k;if(Math.abs(target.y-yGoal)<.01)target.y=yGoal;dirty=true}
+ rebuildDirty();
  if(dirty){dirty=false;updateCamera();renderer.render(scene,camera)}
 }
 function enter(){
+ const id=MD.cidadeAtual;
+ if(!id||!STORE.exists(id)){say('Cidade não encontrada');setTimeout(()=>{if(MD.current==='cidade')history.back()},0);return}
  try{if(!ready){init();ready=true}}
  catch(err){console.error(err);const l=Q('#cityLoading');l.classList.add('on');l.querySelector('span').textContent='Não foi possível iniciar o mapa 3D neste aparelho.';return}
  Q('#cityLoading').classList.remove('on');
- applyConfig(MD.cfg);cancelPlacing();clearSelection();renderLib();updateCount();
- lastT=performance.now();dirty=true;touchScene();if(!raf)raf=requestAnimationFrame(loop);
+ if(cityId!==id){if(!loadCity(id)){setTimeout(()=>{if(MD.current==='cidade')history.back()},0);return}}
+ Q('#cityTitle').textContent=cityName||'MINHA CIDADE';
+ tool='view';placing=null;selected=null;closePanels();ghostGroup.clear();updateGhost();selLine.visible=false;Q('#nudgePad').hidden=true;
+ setPlane();applyConfig(MD.cfg);showBar();renderMats();updateTabs();updateHint();updateLevelUI();updateCount();updateInfoText();
+ lastT=performance.now();dirty=true;if(!raf)raf=requestAnimationFrame(loop);
 }
 function leave(){
  if(raf){cancelAnimationFrame(raf);raf=0}
  panPtr.clear();refreshPan();stopRep();
- if(ready){cancelPlacing();clearSelection()}
+ if(ready&&cityId){if(placing)cancelPlacing();clearSelection();closePanels();flush(true)}
 }
-MD.cidade={enter,leave,applyConfig,
- info:()=>({ready,count:inst.size,placing:placing?{x:placing.x,z:placing.z,rot:placing.rot,over:placing.over,nome:placing.nome}:null,selected,radius,azimuth,polar,target:{x:target.x,z:target.z},
-  tris:[...inst.values()].map(v=>v.def.tris),items:state.items.length,defs:Object.keys(state.defs).length})};
+MD.cidade={enter,leave,applyConfig,forget,
+ info:()=>({ready,cityId,nome:cityName,blocks:blockCount,chunks:chunks.size,terrainTris:terrainTris(),tool,mat,level:L,panel,
+  count:inst.size,placing:placing?{x:placing.x,y:placing.y,z:placing.z,dy:placing.dy,rot:placing.rot,over:placing.over,nome:placing.nome}:null,selected,
+  radius,azimuth,polar,target:{x:target.x,y:target.y,z:target.z},tris:[...inst.values()].map(v=>v.def.tris),items:state.items.length,defs:Object.keys(state.defs).length}),
+ _top:(x,z)=>colTop.get(colOf(x,z)),
+ _block:(x,y,z)=>getBlock(x,y,z)};
 if(MD.current==='cidade')enter();
 </script>
 </body></html>
